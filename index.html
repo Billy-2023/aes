@@ -2,1822 +2,968 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>AES Pro 加密工具</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AES Pro</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         :root {
-            --font-main: '楷体', 'KaiTi', 'STKaiti', '华文楷体', serif;
-            --font-mono: 'Courier New', 'Consolas', monospace;
-            --bg-primary: #f8f9fa;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #f1f3f4;
-            --text-primary: #202124;
-            --text-secondary: #5f6368;
-            --text-tertiary: #80868b;
-            --border-color: #dadce0;
-            --accent-blue: #1a73e8;
-            --accent-blue-light: #e8f0fe;
-            --accent-green: #34a853;
-            --accent-green-light: #e6f4ea;
-            --accent-red: #ea4335;
-            --accent-red-light: #fce8e6;
-            --accent-orange: #fbbc04;
-            --accent-orange-light: #fef7e0;
-            --accent-purple: #a142f4;
-            --accent-purple-light: #f3e8fd;
-            --shadow-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-            --shadow-2: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-            --shadow-3: 0 4px 8px 0 rgba(60,64,67,0.3), 0 8px 16px 4px rgba(60,64,67,0.15);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
+            --bg: #f3f2f1;
+            --fg: #201f1e;
+            --accent: #0078d4;
+            --accent-dark: #005a9e;
+            --danger: #d13438;
+            --success: #107c10;
+            --muted: #605e5c;
+            --border: #d2d0ce;
+            --card: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.85);
         }
 
-        html { font-size: 16px; }
-        @media (max-width: 380px) { html { font-size: 14px; } }
-        @media (min-width: 768px) { html { font-size: 17px; } }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: var(--font-main);
-            background: var(--bg-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
             min-height: 100vh;
             min-height: -webkit-fill-available;
-            color: var(--text-primary);
-            line-height: 1.6;
             overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        .page-bg {
+        /* 初始化/清空进度屏 */
+        .init-screen {
             position: fixed;
             inset: 0;
-            z-index: 0;
-            background: linear-gradient(180deg, #f8f9fa 0%, #e8eaed 100%);
+            background: var(--overlay);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s, visibility 0.4s;
         }
 
-        .page {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 540px;
-            margin: 0 auto;
-            min-height: 100vh;
-            padding: 1rem;
-            padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0));
-            display: none;
-        }
+        .init-screen.active { opacity: 1; visibility: visible; }
 
-        .page.active {
-            display: block;
-            animation: pageSlideIn 0.4s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        @keyframes pageSlideIn {
-            from { opacity: 0; transform: translateX(30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* 头部 */
-        .header {
+        .init-content {
+            width: 85%;
+            max-width: 400px;
             text-align: center;
-            padding: 1.25rem 0 1.5rem;
         }
 
-        .header-logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.625rem;
-            margin-bottom: 0.375rem;
+        .init-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1.5rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .logo-icon {
-            width: 2.75rem;
-            height: 2.75rem;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            border-radius: 0.875rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-2);
-            animation: logoFloat 3s ease-in-out infinite;
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .init-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
         }
 
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+        .init-status {
+            font-size: 0.875rem;
+            opacity: 0.7;
+            margin-bottom: 2rem;
+            min-height: 1.2em;
         }
 
-        .logo-icon svg { width: 1.5rem; height: 1.5rem; color: #fff; }
-
-        .logo-text {
-            font-size: 1.75rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .progress-track {
+            height: 2px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 1px;
+            overflow: hidden;
         }
 
-        .header-sub {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.625rem;
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.2s linear;
         }
 
-        .header-tags {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .header-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.3rem 0.625rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 1.25rem;
-            font-size: 0.6875rem;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-
-        .header-tag:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
-        .header-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: tagPulse 2s ease-in-out infinite; }
-
-        @keyframes tagPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.8); }
-        }
-
-        /* Toast */
-        .toast-wrap {
+        /* 通知提示框 */
+        .notice-container {
             position: fixed;
-            top: 1.25rem;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 9999;
-            pointer-events: none;
-            width: calc(100% - 2rem);
+            z-index: 3000;
+            width: 90%;
             max-width: 360px;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .toast {
-            padding: 1rem 1.25rem;
-            background: var(--bg-secondary);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-3);
+        .notice {
+            background: var(--fg);
+            color: #fff;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.9375rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            font-size: 0.9375rem;
-            font-weight: 500;
             opacity: 0;
-            transform: translateY(-20px) scale(0.95);
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(-20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: auto;
-            border-left: 4px solid;
         }
 
-        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
-        .toast.success { border-color: var(--accent-green); background: linear-gradient(90deg, var(--accent-green-light), var(--bg-secondary)); }
-        .toast.error { border-color: var(--accent-red); background: linear-gradient(90deg, var(--accent-red-light), var(--bg-secondary)); }
-        .toast.info { border-color: var(--accent-blue); background: linear-gradient(90deg, var(--accent-blue-light), var(--bg-secondary)); }
-        .toast svg { width: 1.375rem; height: 1.375rem; flex-shrink: 0; }
-        .toast.success svg { color: var(--accent-green); }
-        .toast.error svg { color: var(--accent-red); }
-        .toast.info svg { color: var(--accent-blue); }
+        .notice.show { opacity: 1; transform: translateY(0); }
+        .notice.success { background: var(--success); }
+        .notice.error { background: var(--danger); }
+        .notice svg { width: 20px; height: 20px; flex-shrink: 0; }
 
         /* 确认弹窗 */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            display: none;
+            background: rgba(0,0,0,0.4);
+            z-index: 1500;
+            display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
-            animation: fadeIn 0.2s ease;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
         }
 
-        .modal-overlay.show { display: flex; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-box {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-xl);
-            padding: 1.5rem;
-            max-width: 320px;
+            background: var(--card);
             width: 100%;
-            box-shadow: var(--shadow-3);
-            animation: modalSlide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 320px;
+            border-radius: 8px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.2s;
         }
 
-        @keyframes modalSlide {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
 
-        .modal-icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            margin: 0 auto 1rem;
-            background: var(--accent-red-light);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-icon svg {
-            width: 2rem;
-            height: 2rem;
-            color: var(--accent-red);
-        }
-
-        .modal-title {
+        .modal-body {
+            padding: 1.5rem;
             text-align: center;
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
         }
 
-        .modal-text {
-            text-align: center;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
+        .modal-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .modal-text { font-size: 0.875rem; color: var(--muted); line-height: 1.5; }
 
-        .modal-btns {
+        .modal-actions {
             display: flex;
-            gap: 0.75rem;
+            border-top: 1px solid var(--border);
         }
 
         .modal-btn {
             flex: 1;
             padding: 0.875rem;
             border: none;
-            border-radius: var(--radius-md);
-            font-family: var(--font-main);
+            background: none;
             font-size: 0.9375rem;
             font-weight: 600;
+            color: var(--accent);
             cursor: pointer;
-            transition: all 0.2s;
+            outline: none;
         }
 
-        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn:active { background: var(--bg); }
+        .modal-btn.danger { color: var(--danger); }
+        .modal-btn:not(:last-child) { border-right: 1px solid var(--border); }
 
-        .modal-btn.cancel {
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
+        /* 主布局 */
+        .app {
+            max-width: 100%;
+            margin: 0 auto;
         }
 
-        .modal-btn.cancel:hover {
-            background: var(--border-color);
+        header {
+            background: var(--card);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .modal-btn.confirm {
-            background: var(--accent-red);
-            color: #fff;
-        }
-
-        .modal-btn.confirm:hover {
-            background: #d33426;
-        }
-
-        /* 卡片 */
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            box-shadow: var(--shadow-1);
-            transition: box-shadow 0.3s;
-        }
-
-        .card:hover { box-shadow: var(--shadow-2); }
-
-        .card-head {
+        .brand {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--accent);
             display: flex;
             align-items: center;
-            gap: 0.625rem;
-            padding: 1rem 1.25rem;
-            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            border-bottom: 1px solid var(--border-color);
+            gap: 0.5rem;
         }
 
-        .card-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            transition: transform 0.3s;
-        }
+        .brand svg { width: 20px; height: 20px; }
 
-        .card:hover .card-icon { transform: scale(1.1) rotate(5deg); }
-        .card-icon.encrypt { background: linear-gradient(135deg, var(--accent-blue-light), var(--accent-purple-light)); }
-        .card-icon.decrypt { background: linear-gradient(135deg, var(--accent-orange-light), var(--accent-red-light)); }
-
-        .card-title { font-size: 1.125rem; font-weight: 600; }
-
-        .card-badge {
-            margin-left: auto;
-            padding: 0.25rem 0.625rem;
-            border-radius: var(--radius-sm);
+        .status-badge {
             font-size: 0.6875rem;
+            padding: 0.2rem 0.5rem;
+            background: var(--success);
+            color: #fff;
+            border-radius: 2px;
             font-weight: 600;
-            letter-spacing: 0.02em;
         }
 
-        .card-badge.blue { background: var(--accent-blue-light); color: var(--accent-blue); }
-        .card-badge.orange { background: var(--accent-orange-light); color: #b06000; }
-
-        /* 模式选择 */
-        .mode-tabs {
-            display: flex;
-            padding: 0.625rem;
-            gap: 0.375rem;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
         }
 
-        .mode-tab {
-            flex: 1;
-            padding: 0.75rem 0.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            background: transparent;
-            color: var(--text-tertiary);
-            font-family: var(--font-main);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+        @media (min-width: 900px) {
+            .grid { grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+        }
+
+        .panel {
+            background: var(--card);
+            padding: 1.25rem;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
+            min-height: 0;
         }
 
-        .mode-tab:active { transform: scale(0.95); }
-        .mode-tab.active { background: var(--bg-secondary); color: var(--text-primary); box-shadow: var(--shadow-1); }
-        .mode-tab .icon { font-size: 1.375rem; transition: transform 0.3s; }
-        .mode-tab.active .icon { transform: scale(1.15); }
-
-        /* 表单 */
-        .form-body { padding: 1.25rem; }
-
-        .form-group { margin-bottom: 1rem; }
-        .form-group:last-child { margin-bottom: 0; }
-
-        .form-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .form-label .meta { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 400; }
-
-        .form-label .tag {
-            padding: 0.15rem 0.5rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.6875rem;
-            font-weight: 600;
-        }
-
-        .tag.blue { background: var(--accent-blue-light); color: var(--accent-blue); }
-        .tag.purple { background: var(--accent-purple-light); color: var(--accent-purple); }
-        .tag.orange { background: var(--accent-orange-light); color: #b06000; }
-        .tag.red { background: var(--accent-red-light); color: var(--accent-red); }
-        .tag.green { background: var(--accent-green-light); color: var(--accent-green); }
-
-        .input-box { position: relative; }
-
-        .input-box textarea,
-        .input-box input {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            padding-right: 3rem;
-            background: var(--bg-tertiary);
-            border: 2px solid transparent;
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-family: var(--font-main);
-            font-size: 1rem;
-            line-height: 1.5;
-            transition: all 0.25s;
-            resize: none;
-        }
-
-        .input-box textarea { min-height: 5rem; }
-        .input-box textarea::placeholder, .input-box input::placeholder { color: var(--text-tertiary); }
-
-        .input-box textarea:focus,
-        .input-box input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            background: var(--bg-secondary);
-            box-shadow: 0 0 0 4px var(--accent-blue-light);
-        }
-
-        .input-btns {
-            position: absolute;
-            right: 0.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .input-btn {
-            width: 2rem;
-            height: 2rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: transparent;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .input-btn:hover { background: var(--bg-secondary); color: var(--accent-blue); }
-        .input-btn:active { transform: scale(0.85); }
-        .input-btn svg { width: 1.125rem; height: 1.125rem; }
-
-        /* 密码强度 */
-        .pwd-meter {
-            margin-top: 0.5rem;
-            padding: 0.625rem 0.75rem;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-sm);
-        }
-
-        .meter-bar { display: flex; gap: 0.25rem; margin-bottom: 0.375rem; }
-
-        .meter-seg {
-            flex: 1;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 2px;
-            transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        .meter-seg.on { background: var(--seg-color); box-shadow: 0 0 8px var(--seg-color); }
-
-        .meter-info { display: flex; justify-content: space-between; font-size: 0.75rem; }
-        .meter-level { font-weight: 600; }
-        .meter-level.weak { color: var(--accent-red); }
-        .meter-level.medium { color: var(--accent-orange); }
-        .meter-level.strong { color: var(--accent-green); }
-        .meter-hint { color: var(--text-tertiary); }
-
-        /* 提示框 */
-        .tip-box {
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, var(--accent-blue-light), var(--accent-purple-light));
-            border: 1px solid rgba(26, 115, 232, 0.2);
-            border-radius: var(--radius-md);
+        .panel-header {
             margin-bottom: 1rem;
-            animation: tipSlide 0.3s ease;
-        }
-
-        @keyframes tipSlide {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .tip-title {
             display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: var(--accent-blue);
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
-        .tip-title svg { width: 1rem; height: 1rem; }
-        .tip-text { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5; }
+        .panel-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.125rem; }
+        .panel-sub { font-size: 0.75rem; color: var(--muted); }
 
-        /* 图片上传 */
-        .upload-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2rem 1.5rem;
+        /* 表单元素 */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1.25rem;
+        }
+
+        .tab {
+            padding: 0.625rem 0;
+            flex: 1;
             text-align: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--muted);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
             cursor: pointer;
-            transition: all 0.25s;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.15s;
         }
 
-        .upload-zone:hover { border-color: var(--accent-blue); background: var(--accent-blue-light); }
-        .upload-zone:active { transform: scale(0.98); }
-        .upload-zone.loaded { padding: 0.75rem; border-style: solid; border-color: var(--accent-green); background: var(--accent-green-light); }
-        .upload-zone img { max-width: 100%; max-height: 8rem; border-radius: var(--radius-md); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-        .upload-placeholder svg {
-            width: 2.5rem;
-            height: 2.5rem;
-            color: var(--text-tertiary);
-            margin-bottom: 0.5rem;
-            transition: transform 0.3s;
-        }
+        .field { margin-bottom: 1rem; }
 
-        .upload-zone:hover .upload-placeholder svg { transform: scale(1.1); }
-        .upload-placeholder p { font-size: 0.875rem; color: var(--text-secondary); }
-
-        .upload-mask {
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.9);
+        .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 0.375rem;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
+            justify-content: space-between;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .upload-zone.loaded .upload-mask { opacity: 1; }
-        .upload-mask span { font-size: 0.875rem; color: var(--accent-blue); font-weight: 500; }
+        .label-badge {
+            font-size: 0.625rem;
+            padding: 0.1rem 0.3rem;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 2px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
 
-        /* 按钮行 */
-        .btn-row {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1.25rem;
+        .label-badge.warn { background: #ffb900; color: #000; }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-family: inherit;
+            font-size: 16px; /* 防止iOS缩放 */
+            color: var(--fg);
+            border-radius: 4px;
+            transition: border-color 0.2s;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 600px) {
+            .row { grid-template-columns: 1fr 1fr; }
         }
 
         .btn {
-            flex: 1;
-            padding: 1rem 0.75rem;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-family: var(--font-main);
-            font-size: 1rem;
+            padding: 0.875rem 1rem;
+            font-size: 0.9375rem;
             font-weight: 600;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; pointer-events: none; }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:active { background: var(--accent-dark); }
+        
+        .btn-danger { background: var(--danger); color: #fff; }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--fg);
+        }
+        .btn-outline:active { background: var(--bg); }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .result-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-top: 1rem;
             position: relative;
-            overflow: hidden;
         }
-
-        .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(rgba(255,255,255,0.2), transparent);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .btn:hover::after { opacity: 1; }
-        .btn:active { transform: scale(0.97); }
-        .btn svg { width: 1.25rem; height: 1.25rem; }
-
-        .btn.primary {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            color: #fff;
-            box-shadow: var(--shadow-2);
-        }
-
-        .btn.primary:hover { box-shadow: var(--shadow-3); }
-
-        .btn.secondary {
-            background: linear-gradient(135deg, var(--accent-orange), var(--accent-red));
-            color: #fff;
-            box-shadow: var(--shadow-2);
-        }
-
-        .btn.ghost {
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn.ghost:hover { background: var(--bg-secondary); border-color: var(--text-tertiary); }
-        .btn.danger { background: var(--accent-red-light); color: var(--accent-red); border: 1px solid rgba(234, 67, 53, 0.3); }
-        .btn.danger:hover { background: var(--accent-red); color: #fff; }
-        .btn:disabled { opacity: 0.6; pointer-events: none; }
-
-        .btn .spin {
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* 结果区 */
-        .result-section {
-            margin-top: 1.25rem;
-            padding-top: 1.25rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.625rem;
-        }
-
-        .result-title { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
 
         .result-content {
-            min-height: 4.5rem;
-            max-height: 10rem;
-            overflow-y: auto;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            font-family: var(--font-mono);
+            padding: 0.75rem;
+            font-family: "Consolas", monospace;
             font-size: 0.8125rem;
-            line-height: 1.6;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-all;
-            cursor: pointer;
-            transition: all 0.25s;
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .result-content:hover { border-color: var(--accent-blue); background: var(--bg-secondary); }
-        .result-content .empty { color: var(--text-tertiary); font-style: italic; }
+        .result-box.empty .result-content { color: var(--muted); font-style: italic; }
 
-        /* 复制按钮 */
-        .copy-btn-wrap {
+        .result-footer {
             display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
-        .copy-btn {
-            flex: 1;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
-            font-family: var(--font-main);
-            font-size: 0.9375rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .copy-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: var(--accent-blue-light); }
-        .copy-btn:active { transform: scale(0.97); }
-        .copy-btn svg { width: 1.25rem; height: 1.25rem; transition: transform 0.3s; }
-        .copy-btn:hover svg { transform: scale(1.1); }
-
-        .copy-btn.done {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            background: var(--accent-green-light);
-            animation: copySuccess 0.4s ease;
-        }
-
-        @keyframes copySuccess {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .copy-btn.done svg { animation: checkmark 0.4s ease; }
-
-        @keyframes checkmark {
-            0% { transform: scale(0) rotate(-45deg); }
-            50% { transform: scale(1.2) rotate(0deg); }
-            100% { transform: scale(1) rotate(0deg); }
-        }
-
-        /* 算法检测 */
-        .algo-info {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
             padding: 0.5rem 0.75rem;
-            background: var(--accent-green-light);
-            border: 1px solid rgba(52, 168, 83, 0.2);
-            border-radius: var(--radius-md);
-            margin-top: 0.625rem;
-            font-size: 0.8125rem;
-            color: var(--accent-green);
-            animation: algoSlide 0.3s ease;
+            border-top: 1px solid var(--border);
+            background: var(--card);
         }
 
-        @keyframes algoSlide {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .algo-info svg { width: 1rem; height: 1rem; }
-
-        /* 图片预览 */
-        .img-result {
-            margin-top: 0.75rem;
-            padding: 0.75rem;
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            animation: imgSlide 0.35s ease;
-        }
-
-        @keyframes imgSlide {
-            from { opacity: 0; transform: translateY(15px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .img-result-head {
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .img-result-head svg { width: 1.125rem; height: 1.125rem; color: var(--accent-green); }
-
-        .img-result img {
-            max-width: 100%;
-            max-height: 12rem;
-            display: block;
-            margin: 0 auto;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-1);
-        }
-
-        .img-result .dl-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: var(--accent-green);
-            color: #fff;
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-1);
-        }
-
-        .img-result .dl-btn:hover { background: #2d9248; box-shadow: var(--shadow-2); }
-        .img-result .dl-btn:active { transform: scale(0.97); }
-        .img-result .dl-btn svg { width: 1.125rem; height: 1.125rem; }
-
-        /* 导航按钮 */
-        .nav-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 1rem;
-            margin-top: 1rem;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            color: var(--accent-blue);
-            font-family: var(--font-main);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-            box-shadow: var(--shadow-1);
-        }
-
-        .nav-btn:hover { border-color: var(--accent-blue); background: var(--accent-blue-light); box-shadow: var(--shadow-2); }
-        .nav-btn:active { transform: scale(0.98); }
-        .nav-btn svg { width: 1.25rem; height: 1.25rem; transition: transform 0.3s; }
-        .nav-btn:hover svg { transform: translateX(4px); }
-        .nav-btn.orange { color: #b06000; }
-        .nav-btn.orange:hover { border-color: var(--accent-orange); background: var(--accent-orange-light); }
-
-        /* 特性 */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.625rem;
-            margin-top: 1.25rem;
-        }
-
-        .feature {
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            text-align: center;
-            transition: all 0.25s;
-            box-shadow: var(--shadow-1);
-        }
-
-        .feature:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); border-color: var(--accent-blue); }
-        .feature:active { transform: scale(0.98); }
-        .feature .icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
-        .feature .name { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.1rem; }
-        .feature .desc { font-size: 0.75rem; color: var(--text-tertiary); }
-
-        /* 页脚 */
-        .footer {
-            text-align: center;
-            padding: 1.25rem 0;
+        .result-meta { font-size: 0.6875rem; color: var(--muted); }
+        
+        .btn-sm {
+            padding: 0.375rem 0.625rem;
             font-size: 0.75rem;
-            color: var(--text-tertiary);
+        }
+
+        /* 智能提示条 */
+        .info-strip {
+            background: #e1f5fe;
+            padding: 0.625rem 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: #01579b;
+            border-left: 3px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .info-strip.hidden { display: none; }
+
+        .upload-area {
+            border: 1px dashed var(--border);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .upload-area:active { background: var(--bg); border-color: var(--accent); }
+        .upload-area.loaded { border-style: solid; border-color: var(--success); background: #e5f5e5; }
+
+        .upload-icon { width: 24px; height: 24px; color: var(--muted); margin-bottom: 0.5rem; }
+        .upload-text { font-size: 0.8125rem; color: var(--muted); }
+
+        .strength-bar {
+            height: 2px;
+            background: var(--border);
+            margin-top: 0.375rem;
+            border-radius: 1px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: width 0.2s, background 0.2s;
+        }
+
+        .img-preview {
+            margin-top: 0.75rem;
+            text-align: center;
+        }
+        
+        .img-preview img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
         }
 
         .hidden { display: none !important; }
-
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
     </style>
 </head>
 <body>
-    <div class="page-bg"></div>
 
-    <!-- Toast -->
-    <div class="toast-wrap">
-        <div id="toast" class="toast">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path id="toast-icon" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span id="toast-text"></span>
+<div class="init-screen" id="initScreen">
+    <div class="init-content">
+        <div class="init-icon"></div>
+        <div class="init-title" id="initTitle">正在初始化</div>
+        <div class="init-status" id="initStatus">检查安全环境...</div>
+        <div class="progress-track">
+            <div class="progress-fill" id="initProgress"></div>
         </div>
     </div>
+</div>
 
-    <!-- 确认弹窗 -->
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
+<div class="notice-container" id="noticeContainer"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-body">
+            <div class="modal-title" id="modalTitle">确认操作</div>
+            <div class="modal-text" id="modalText">是否继续？</div>
+        </div>
+        <div class="modal-actions">
+            <button class="modal-btn" id="modalCancel">取消</button>
+            <button class="modal-btn danger" id="modalConfirm">确认</button>
+        </div>
+    </div>
+</div>
+
+<div class="app">
+    <header>
+        <div class="brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            AES Pro
+        </div>
+        <div class="status-badge">本地安全</div>
+    </header>
+
+    <div class="grid">
+        <!-- 加密区 -->
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">加密工具</div>
+                    <div class="panel-sub">本地处理，数据不上传</div>
+                </div>
             </div>
-            <div class="modal-title" id="modal-title">确认清空</div>
-            <div class="modal-text" id="modal-text">确定要清空所有内容吗？此操作不可恢复。</div>
-            <div class="modal-btns">
-                <button class="modal-btn cancel" id="modal-cancel">取消</button>
-                <button class="modal-btn confirm" id="modal-confirm">确认清空</button>
+
+            <div class="tabs">
+                <button class="tab active" data-mode="text">文本</button>
+                <button class="tab" data-mode="dual">双瞳</button>
+                <button class="tab" data-mode="image">图片</button>
+            </div>
+
+            <div id="modeText">
+                <div class="field">
+                    <div class="label"><span>明文内容</span><span id="countSrc">0 字符</span></div>
+                    <textarea id="srcText" placeholder="输入要加密的内容..."></textarea>
+                </div>
+            </div>
+
+            <div id="modeDual" class="hidden">
+                <div class="info-strip">
+                    <span>双瞳模式：密码A加密内容A，密码B加密内容B</span>
+                </div>
+                <div class="field">
+                    <div class="label"><span>内容 A</span><span class="label-badge">密码A</span></div>
+                    <textarea id="srcA" placeholder="第一段内容..."></textarea>
+                </div>
+                <div class="field">
+                    <div class="label"><span>内容 B</span><span class="label-badge warn">密码B</span></div>
+                    <textarea id="srcB" placeholder="第二段内容..."></textarea>
+                </div>
+            </div>
+
+            <div id="modeImage" class="hidden">
+                <div class="field">
+                    <div class="label">选择文件</div>
+                    <div class="upload-area" id="uploadArea">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <div class="upload-text" id="uploadText">点击选择图片</div>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <div class="label"><span>密码 A</span><span id="strLabel"></span></div>
+                    <input type="password" id="keyA" placeholder="输入主密码">
+                    <div class="strength-bar"><div class="strength-fill" id="strFill"></div></div>
+                </div>
+                <div class="field hidden" id="fieldKeyB">
+                    <div class="label"><span>密码 B</span><span class="label-badge warn">可选</span></div>
+                    <input type="password" id="keyB" placeholder="输入第二密码">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" id="btnEnc">加密</button>
+                <button class="btn btn-outline" id="btnClearEnc">清空</button>
+            </div>
+
+            <div class="result-box empty" id="resEncBox">
+                <div class="result-content" id="resEnc">加密结果将显示在这里</div>
+                <div class="result-footer">
+                    <span class="result-meta" id="metaEnc">等待操作</span>
+                    <button class="btn btn-sm btn-outline hidden" id="btnCopyEnc">复制</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 解密区 -->
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">解密工具</div>
+                    <div class="panel-sub">自动识别算法</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label"><span>密文内容</span><span id="countCipher">0 字符</span></div>
+                <textarea id="cipherText" placeholder="粘贴密文..."></textarea>
+            </div>
+
+            <div class="info-strip hidden" id="detectStrip">
+                <span>检测类型</span>
+                <span id="detectType">--</span>
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <div class="label">密码 A</div>
+                    <input type="password" id="decKeyA" placeholder="输入密码">
+                </div>
+                <div class="field hidden" id="fieldDecB">
+                    <div class="label"><span>密码 B</span><span class="label-badge warn">解密内容B</span></div>
+                    <input type="password" id="decKeyB" placeholder="输入密码B">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-danger" id="btnDec">解密</button>
+                <button class="btn btn-outline" id="btnClearDec">清空</button>
+            </div>
+
+            <div class="result-box empty" id="resDecBox">
+                <div class="result-content" id="resDec">解密结果将显示在这里</div>
+                <div class="result-footer">
+                    <span class="result-meta" id="metaDec">等待操作</span>
+                    <button class="btn btn-sm btn-outline hidden" id="btnCopyDec">复制</button>
+                </div>
+            </div>
+
+            <div class="img-preview hidden" id="imgPreview">
+                <img id="decImg" src="" alt="">
+                <a class="btn btn-sm btn-outline" id="btnDl" download="decrypted.jpg" style="margin-top:0.5rem;">下载图片</a>
             </div>
         </div>
     </div>
-
-    <!-- 加密页面 -->
-    <div id="page-encrypt" class="page active">
-        <header class="header">
-            <div class="header-logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </div>
-                <h1 class="logo-text">AES Pro</h1>
-            </div>
-            <p class="header-sub">军事级加密 · 本地处理 · 安全可靠</p>
-            <div class="header-tags">
-                <span class="header-tag">AES-256-GCM</span>
-                <span class="header-tag">PBKDF2</span>
-                <span class="header-tag">100K迭代</span>
-            </div>
-        </header>
-
-        <div class="card">
-            <div class="card-head">
-                <div class="card-icon encrypt">🔐</div>
-                <span class="card-title">加密中心</span>
-                <span class="card-badge blue">本地加密</span>
-            </div>
-
-            <div class="mode-tabs">
-                <button class="mode-tab active" data-mode="text">
-                    <span class="icon">📝</span>
-                    <span>文本</span>
-                </button>
-                <button class="mode-tab" data-mode="dual">
-                    <span class="icon">👁️</span>
-                    <span>双瞳</span>
-                </button>
-                <button class="mode-tab" data-mode="image">
-                    <span class="icon">🖼️</span>
-                    <span>图片</span>
-                </button>
-            </div>
-
-            <div class="form-body">
-                <div id="mode-text">
-                    <div class="form-group">
-                        <div class="form-label">
-                            <span>明文内容</span>
-                            <span class="meta" id="char-count">0 字符</span>
-                        </div>
-                        <div class="input-box">
-                            <textarea id="plaintext" placeholder="请输入要加密的文本..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mode-dual" class="hidden">
-                    <div class="tip-box">
-                        <div class="tip-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            双瞳加密说明
-                        </div>
-                        <div class="tip-text">密码A独立加密明文A，密码B独立加密明文B<br>解密时各密码只能解密对应内容，互不影响</div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-label">
-                            <span>明文 A</span>
-                            <span class="tag blue">密码A加密</span>
-                        </div>
-                        <div class="input-box">
-                            <textarea id="plaintext-a" placeholder="第一段明文..."></textarea>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-label">
-                            <span>明文 B</span>
-                            <span class="tag purple">密码B加密</span>
-                        </div>
-                        <div class="input-box">
-                            <textarea id="plaintext-b" placeholder="第二段明文..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mode-image" class="hidden">
-                    <div class="form-group">
-                        <div class="form-label">
-                            <span>选择图片</span>
-                            <span class="meta">JPG/PNG/GIF</span>
-                        </div>
-                        <div class="upload-zone" id="upload-zone">
-                            <div class="upload-placeholder">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <p>点击选择图片</p>
-                            </div>
-                            <div class="upload-mask"><span>点击更换</span></div>
-                        </div>
-                        <input type="file" id="image-input" accept="image/*" hidden>
-                    </div>
-                </div>
-
-                <div id="pwd-area">
-                    <div class="form-group" id="pwd-a-group">
-                        <div class="form-label">
-                            <span id="pwd-a-name">密码</span>
-                            <span class="tag red" id="pwd-a-tag">必填</span>
-                        </div>
-                        <div class="input-box">
-                            <input type="password" id="password-a" placeholder="请输入密码">
-                            <div class="input-btns">
-                                <button type="button" class="input-btn" id="toggle-pwd-a">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                </button>
-                                <button type="button" class="input-btn" id="gen-pwd-a">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="pwd-meter" id="pwd-meter">
-                            <div class="meter-bar">
-                                <div class="meter-seg"></div>
-                                <div class="meter-seg"></div>
-                                <div class="meter-seg"></div>
-                                <div class="meter-seg"></div>
-                                <div class="meter-seg"></div>
-                            </div>
-                            <div class="meter-info">
-                                <span class="meter-level" id="meter-level"></span>
-                                <span class="meter-hint" id="meter-hint"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group hidden" id="pwd-b-group">
-                        <div class="form-label">
-                            <span>密码 B</span>
-                            <span class="tag purple">加密明文B</span>
-                        </div>
-                        <div class="input-box">
-                            <input type="password" id="password-b" placeholder="请输入密码B">
-                            <div class="input-btns">
-                                <button type="button" class="input-btn" id="toggle-pwd-b">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn primary" id="btn-encrypt">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                        <span>加密</span>
-                    </button>
-                    <button class="btn danger" id="btn-clear">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                        <span>清空</span>
-                    </button>
-                </div>
-
-                <div class="result-section">
-                    <div class="result-header">
-                        <span class="result-title">加密结果</span>
-                    </div>
-                    <div class="result-content" id="encrypt-result">
-                        <span class="empty">加密结果将显示在这里...</span>
-                    </div>
-                    <div class="copy-btn-wrap">
-                        <button class="copy-btn" id="btn-copy">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
-                            <span>复制结果</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <button class="nav-btn orange" id="go-decrypt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-            </svg>
-            前往解密中心
-        </button>
-
-        <div class="features">
-            <div class="feature"><div class="icon">🔐</div><div class="name">军事级加密</div><div class="desc">AES-256-GCM</div></div>
-            <div class="feature"><div class="icon">🔑</div><div class="name">强密钥派生</div><div class="desc">PBKDF2 10万次</div></div>
-            <div class="feature"><div class="icon">🎲</div><div class="name">随机盐值</div><div class="desc">每次唯一</div></div>
-            <div class="feature"><div class="icon">💻</div><div class="name">本地处理</div><div class="desc">数据不上传</div></div>
-        </div>
-
-        <footer class="footer">AES Pro · 本地安全加密 · 您的数据您做主</footer>
-    </div>
-
-    <!-- 解密页面 -->
-    <div id="page-decrypt" class="page">
-        <header class="header">
-            <div class="header-logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <h1 class="logo-text">解密中心</h1>
-            </div>
-            <p class="header-sub">安全解密 · 自动识别 · 支持双瞳图片</p>
-            <div class="header-tags">
-                <span class="header-tag">自动识别</span>
-                <span class="header-tag">双瞳解密</span>
-                <span class="header-tag">图片解密</span>
-            </div>
-        </header>
-
-        <div class="card">
-            <div class="card-head">
-                <div class="card-icon decrypt">🔓</div>
-                <span class="card-title">解密操作</span>
-                <span class="card-badge orange">安全解密</span>
-            </div>
-
-            <div class="form-body">
-                <div class="form-group">
-                    <div class="form-label">
-                        <span>密文内容</span>
-                        <span class="meta">点击粘贴或输入密文</span>
-                    </div>
-                    <div class="input-box">
-                        <textarea id="ciphertext" placeholder="请粘贴要解密的密文..."></textarea>
-                    </div>
-                </div>
-
-                <div class="algo-info hidden" id="algo-info">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span id="algo-text">检测到: AES-256-GCM</span>
-                </div>
-
-                <div class="tip-box hidden" id="decrypt-tip">
-                    <div class="tip-title">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span id="decrypt-tip-title">双瞳密文</span>
-                    </div>
-                    <div class="tip-text" id="decrypt-tip-text">密码A只能解密内容A，密码B只能解密内容B</div>
-                </div>
-
-                <div class="form-group">
-                    <div class="form-label">
-                        <span id="decrypt-pwd-name">解密密码</span>
-                        <span class="tag red">必填</span>
-                    </div>
-                    <div class="input-box">
-                        <input type="password" id="decrypt-pwd-a" placeholder="请输入解密密码">
-                        <div class="input-btns">
-                            <button type="button" class="input-btn" id="toggle-decrypt-pwd-a">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="decrypt-pwd-b-group">
-                    <div class="form-label">
-                        <span>密码 B</span>
-                        <span class="tag purple">解密内容B</span>
-                    </div>
-                    <div class="input-box">
-                        <input type="password" id="decrypt-pwd-b" placeholder="输入密码B解密内容B">
-                        <div class="input-btns">
-                            <button type="button" class="input-btn" id="toggle-decrypt-pwd-b">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn secondary" id="btn-decrypt">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
-                        </svg>
-                        <span>解密</span>
-                    </button>
-                    <button class="btn danger" id="btn-clear-decrypt">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                        <span>清空</span>
-                    </button>
-                </div>
-
-                <div class="result-section">
-                    <div class="result-header">
-                        <span class="result-title">解密结果</span>
-                    </div>
-                    <div class="result-content" id="decrypt-result">
-                        <span class="empty">解密结果将显示在这里...</span>
-                    </div>
-                    <div class="copy-btn-wrap">
-                        <button class="copy-btn" id="btn-copy-decrypt">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
-                            <span>复制结果</span>
-                        </button>
-                    </div>
-
-                    <div class="img-result hidden" id="img-result">
-                        <div class="img-result-head">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            解密图片预览
-                        </div>
-                        <img id="decrypt-img" src="" alt="解密图片">
-                        <a id="dl-img" download="decrypted.jpg" class="dl-btn">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                            </svg>
-                            下载图片
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <button class="nav-btn" id="go-encrypt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
-            返回加密主页
-        </button>
-
-        <footer class="footer">AES Pro · 本地安全加密 · 您的数据您做主</footer>
-    </div>
-
-    <script>
-        // 状态
-        let currentMode = 'text';
-        let imageFile = null;
-        let modalCallback = null;
-
-        // DOM
-        const $ = id => document.getElementById(id);
-        const toast = $('toast');
-        const toastIcon = $('toast-icon');
-        const toastText = $('toast-text');
-        const modalOverlay = $('modal-overlay');
-        const modalTitle = $('modal-title');
-        const modalText = $('modal-text');
-
-        // Toast
-        function showToast(text, type = 'info') {
-            const icons = {
-                success: 'M5 13l4 4L19 7',
-                error: 'M6 18L18 6M6 6l12 12',
-                info: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-            };
-            toast.className = 'toast ' + type;
-            toastIcon.setAttribute('d', icons[type]);
-            toastText.textContent = text;
-            toast.classList.remove('show');
-            void toast.offsetWidth;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // 弹窗
-        function showModal(title, text, callback) {
-            modalTitle.textContent = title;
-            modalText.textContent = text;
-            modalCallback = callback;
-            modalOverlay.classList.add('show');
-        }
-
-        function hideModal() {
-            modalOverlay.classList.remove('show');
-            modalCallback = null;
-        }
-
-        $('modal-cancel').addEventListener('click', hideModal);
-        $('modal-confirm').addEventListener('click', () => {
-            if (modalCallback) modalCallback();
-            hideModal();
-        });
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) hideModal();
-        });
-
-        // 页面切换
-        $('go-decrypt').addEventListener('click', () => {
-            $('page-encrypt').style.animation = 'pageSlideOut 0.3s ease forwards';
-            setTimeout(() => {
-                $('page-encrypt').classList.remove('active');
-                $('page-encrypt').style.animation = '';
-                $('page-decrypt').classList.add('active');
-            }, 250);
-        });
-
-        $('go-encrypt').addEventListener('click', () => {
-            $('page-decrypt').style.animation = 'pageSlideOut 0.3s ease forwards';
-            setTimeout(() => {
-                $('page-decrypt').classList.remove('active');
-                $('page-decrypt').style.animation = '';
-                $('page-encrypt').classList.add('active');
-            }, 250);
-        });
-
-        const style = document.createElement('style');
-        style.textContent = `@keyframes pageSlideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-30px); } }`;
-        document.head.appendChild(style);
-
-        // 模式切换
-        document.querySelectorAll('.mode-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                currentMode = tab.dataset.mode;
-
-                $('mode-text').classList.toggle('hidden', currentMode !== 'text');
-                $('mode-dual').classList.toggle('hidden', currentMode !== 'dual');
-                $('mode-image').classList.toggle('hidden', currentMode !== 'image');
-                $('pwd-b-group').classList.toggle('hidden', currentMode !== 'dual');
-
-                const pwdAName = $('pwd-a-name');
-                const pwdATag = $('pwd-a-tag');
-                if (currentMode === 'dual') {
-                    pwdAName.textContent = '密码 A';
-                    pwdATag.textContent = '加密明文A';
-                    pwdATag.className = 'tag blue';
-                } else {
-                    pwdAName.textContent = '密码';
-                    pwdATag.textContent = '必填';
-                    pwdATag.className = 'tag red';
-                }
-            });
-        });
-
-        // 密码强度
-        function checkStrength(pwd) {
-            if (!pwd) return { score: 0, label: '', hint: '' };
-            let score = 0;
-            if (pwd.length >= 8) score++;
-            if (pwd.length >= 12) score++;
-            if (pwd.length >= 16) score++;
-            if (/[a-z]/.test(pwd)) score++;
-            if (/[A-Z]/.test(pwd)) score++;
-            if (/[0-9]/.test(pwd)) score++;
-            if (/[^a-zA-Z0-9]/.test(pwd)) score++;
-            if (/(.)\1{2,}/.test(pwd)) score--;
-            score = Math.max(0, Math.min(5, score));
-
-            const levels = [
-                { label: '极弱', hint: '太短', cls: 'weak' },
-                { label: '弱', hint: '建议加长', cls: 'weak' },
-                { label: '一般', hint: '可以更强', cls: 'medium' },
-                { label: '强', hint: '不错', cls: 'medium' },
-                { label: '很强', hint: '很好', cls: 'strong' },
-                { label: '极强', hint: '完美', cls: 'strong' }
-            ];
-            return { score, ...levels[score] };
-        }
-
-        function updateStrength() {
-            const pwd = $('password-a').value;
-            const s = checkStrength(pwd);
-            const segs = $('pwd-meter').querySelectorAll('.meter-seg');
-            const colors = ['#ea4335', '#fbbc04', '#fbbc04', '#34a853', '#34a853', '#1a73e8'];
-
-            segs.forEach((seg, i) => {
-                seg.classList.toggle('on', i < s.score);
-                seg.style.setProperty('--seg-color', colors[s.score]);
-            });
-
-            $('meter-level').textContent = s.label ? '强度: ' + s.label : '';
-            $('meter-level').className = 'meter-level ' + (s.cls || '');
-            $('meter-hint').textContent = s.hint || '';
-        }
-
-        $('password-a').addEventListener('input', updateStrength);
-
-        // 显示密码
-        $('toggle-pwd-a').addEventListener('click', () => {
-            const el = $('password-a');
-            el.type = el.type === 'password' ? 'text' : 'password';
-        });
-        $('toggle-pwd-b').addEventListener('click', () => {
-            const el = $('password-b');
-            el.type = el.type === 'password' ? 'text' : 'password';
-        });
-        $('toggle-decrypt-pwd-a').addEventListener('click', () => {
-            const el = $('decrypt-pwd-a');
-            el.type = el.type === 'password' ? 'text' : 'password';
-        });
-        $('toggle-decrypt-pwd-b').addEventListener('click', () => {
-            const el = $('decrypt-pwd-b');
-            el.type = el.type === 'password' ? 'text' : 'password';
-        });
-
-        // 生成密码
-        $('gen-pwd-a').addEventListener('click', () => {
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-            let pwd = '';
-            for (let i = 0; i < 20; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
-            $('password-a').value = pwd;
-            updateStrength();
-            showToast('已生成强密码', 'success');
-        });
-
-        // 字符计数
-        $('plaintext').addEventListener('input', () => {
-            $('char-count').textContent = $('plaintext').value.length + ' 字符';
-        });
-
-        // 图片上传
-        const uploadZone = $('upload-zone');
-        const imageInput = $('image-input');
-
-        uploadZone.addEventListener('click', () => imageInput.click());
-        imageInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                imageFile = file;
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    uploadZone.classList.add('loaded');
-                    uploadZone.innerHTML = `<img src="${ev.target.result}" alt="预览"><div class="upload-mask"><span>点击更换</span></div>`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 密钥派生
-        async function deriveKey(password, salt, algo) {
-            const enc = new TextEncoder();
-            const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-            const algoName = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-            const len = algo === 'CTR' ? 128 : 256;
-            return crypto.subtle.deriveKey(
-                { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-                keyMaterial,
-                { name: algoName, length: len },
-                false,
-                ['encrypt', 'decrypt']
-            );
-        }
-
-        // 加密
-        async function encrypt(data, password, algo = 'GCM') {
-            const enc = new TextEncoder();
-            const salt = crypto.getRandomValues(new Uint8Array(16));
-            const ivLen = algo === 'GCM' ? 12 : 16;
-            const iv = crypto.getRandomValues(new Uint8Array(ivLen));
-            const key = await deriveKey(password, salt, algo);
-            const algoName = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-
-            const params = algo === 'CTR' ? { name: 'AES-CTR', counter: iv, length: 64 } : { name: algoName, iv };
-
-            const encrypted = await crypto.subtle.encrypt(params, key, enc.encode(data));
-            const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-            combined.set(salt, 0);
-            combined.set(iv, salt.length);
-            combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-
-            return 'AES' + algo + btoa(String.fromCharCode(...combined));
-        }
-
-        // 解密
-        async function decrypt(data, password) {
-            let algo = 'GCM';
-            if (data.startsWith('AESCTR')) { algo = 'CTR'; data = data.slice(6); }
-            else if (data.startsWith('AESCBC')) { algo = 'CBC'; data = data.slice(6); }
-            else if (data.startsWith('AESGCM')) { algo = 'GCM'; data = data.slice(6); }
-
-            const combined = new Uint8Array(atob(data).split('').map(c => c.charCodeAt(0)));
-            const salt = combined.slice(0, 16);
-            const ivLen = algo === 'GCM' ? 12 : 16;
-            const iv = combined.slice(16, 16 + ivLen);
-            const encrypted = combined.slice(16 + ivLen);
-            const key = await deriveKey(password, salt, algo);
-            const algoName = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-
-            const params = algo === 'CTR' ? { name: 'AES-CTR', counter: iv, length: 64 } : { name: algoName, iv };
-
-            const decrypted = await crypto.subtle.decrypt(params, key, encrypted);
-            return { text: new TextDecoder().decode(decrypted), algo };
-        }
-
-        // 检测算法
-        function detectAlgo(data) {
-            if (data.startsWith('DUAL:')) return '双瞳加密';
-            if (data.startsWith('IMG:')) return '图片加密';
-            if (data.startsWith('AESCTR')) return 'AES-128-CTR';
-            if (data.startsWith('AESCBC')) return 'AES-256-CBC';
-            if (data.startsWith('AESGCM')) return 'AES-256-GCM';
-            return 'AES-256-GCM (默认)';
-        }
-
-        // 加密按钮
-        $('btn-encrypt').addEventListener('click', async () => {
-            const pwdA = $('password-a').value;
-            if (!pwdA) { showToast('请输入密码', 'error'); return; }
-
-            const btn = $('btn-encrypt');
-            btn.innerHTML = '<div class="spin"></div><span>加密中</span>';
-            btn.disabled = true;
-
-            try {
-                let output = '';
-
-                if (currentMode === 'text') {
-                    const text = $('plaintext').value;
-                    if (!text) throw new Error('请输入明文');
-                    output = await encrypt(text, pwdA, 'GCM');
-                } else if (currentMode === 'dual') {
-                    const textA = $('plaintext-a').value;
-                    const textB = $('plaintext-b').value;
-                    const pwdB = $('password-b').value;
-
-                    if (!textA && !textB) throw new Error('请至少输入一段明文');
-
-                    const encA = textA ? await encrypt(textA, pwdA, 'GCM') : '';
-                    const encB = (textB && pwdB) ? await encrypt(textB, pwdB, 'CBC') : '';
-                    output = 'DUAL:' + encA + ':' + encB;
-                } else if (currentMode === 'image') {
-                    if (!imageFile) throw new Error('请选择图片');
-
-                    const reader = new FileReader();
-                    reader.onload = async e => {
-                        try {
-                            const base64 = e.target.result.split(',')[1];
-                            output = 'IMG:' + await encrypt(base64, pwdA, 'GCM');
-                            $('encrypt-result').innerHTML = output;
-                            showToast('图片加密成功', 'success');
-                        } catch (err) {
-                            showToast('加密失败: ' + err.message, 'error');
-                        }
-                        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span>加密</span>';
-                        btn.disabled = false;
-                    };
-                    reader.readAsDataURL(imageFile);
-                    return;
-                }
-
-                $('encrypt-result').innerHTML = output;
-                showToast('加密成功', 'success');
-            } catch (err) {
-                showToast('加密失败: ' + err.message, 'error');
-            }
-
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg><span>加密</span>';
-            btn.disabled = false;
-        });
-
-        // 解密按钮
-        $('btn-decrypt').addEventListener('click', async () => {
-            const input = $('ciphertext').value.trim();
-            if (!input) { showToast('请输入密文', 'error'); return; }
-
-            const pwdA = $('decrypt-pwd-a').value;
-            if (!pwdA) { showToast('请输入密码', 'error'); return; }
-
-            const btn = $('btn-decrypt');
-            btn.innerHTML = '<div class="spin"></div><span>解密中</span>';
-            btn.disabled = true;
-            $('img-result').classList.add('hidden');
-
-            try {
-                const detected = detectAlgo(input);
-                $('algo-text').textContent = '检测到: ' + detected;
-                $('algo-info').classList.remove('hidden');
-
-                if (input.startsWith('IMG:')) {
-                    $('decrypt-tip').classList.remove('hidden');
-                    $('decrypt-tip-title').textContent = '图片密文';
-                    $('decrypt-tip-text').textContent = '正在解密图片，请稍候...';
-                    $('decrypt-pwd-b-group').classList.add('hidden');
-
-                    const encData = input.slice(4);
-                    const { text: base64 } = await decrypt(encData, pwdA);
-                    $('decrypt-img').src = 'data:image/jpeg;base64,' + base64;
-                    $('dl-img').href = $('decrypt-img').src;
-                    $('img-result').classList.remove('hidden');
-                    $('decrypt-result').innerHTML = '<span class="empty">[图片已解密] 查看下方预览</span>';
-                    $('decrypt-tip-text').textContent = '图片解密成功，可下载保存';
-                    showToast('图片解密成功', 'success');
-
-                } else if (input.startsWith('DUAL:')) {
-                    $('decrypt-tip').classList.remove('hidden');
-                    $('decrypt-tip-title').textContent = '双瞳密文';
-                    $('decrypt-tip-text').textContent = '密码A只能解密内容A，密码B只能解密内容B';
-                    $('decrypt-pwd-b-group').classList.remove('hidden');
-
-                    const parts = input.slice(5).split(':');
-                    let result = '';
-
-                    if (parts[0]) {
-                        try {
-                            const { text: textA } = await decrypt(parts[0], pwdA);
-                            result += '━━━━━ 内容 A ━━━━━\n' + textA + '\n\n';
-                        } catch {
-                            result += '━━━━━ 内容 A ━━━━━\n[密码A错误，无法解密]\n\n';
-                        }
-                    }
-
-                    const pwdB = $('decrypt-pwd-b').value;
-                    if (parts[1]) {
-                        if (pwdB) {
-                            try {
-                                const { text: textB } = await decrypt(parts[1], pwdB);
-                                result += '━━━━━ 内容 B ━━━━━\n' + textB;
-                            } catch {
-                                result += '━━━━━ 内容 B ━━━━━\n[密码B错误，无法解密]';
-                            }
-                        } else {
-                            result += '━━━━━ 内容 B ━━━━━\n[请输入密码B解密此内容]';
-                        }
-                    }
-
-                    $('decrypt-result').innerHTML = result;
-                    showToast('双瞳解密完成', 'success');
-
-                } else {
-                    $('decrypt-tip').classList.add('hidden');
-                    $('decrypt-pwd-b-group').classList.add('hidden');
-
-                    const { text, algo } = await decrypt(input, pwdA);
-                    $('decrypt-result').innerHTML = text;
-                    $('algo-text').textContent = '检测到: AES-256-' + algo;
-                    showToast('解密成功', 'success');
-                }
-            } catch (err) {
-                showToast('解密失败: 密码错误或数据损坏', 'error');
-                $('algo-info').classList.add('hidden');
-                $('decrypt-tip').classList.add('hidden');
-            }
-
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg><span>解密</span>';
-            btn.disabled = false;
-        });
-
-        // 清空加密页 - 增强版
-        function clearEncryptPage() {
-            $('plaintext').value = '';
-            $('plaintext-a').value = '';
-            $('plaintext-b').value = '';
-            $('password-a').value = '';
-            $('password-b').value = '';
-            $('char-count').textContent = '0 字符';
-            $('encrypt-result').innerHTML = '<span class="empty">加密结果将显示在这里...</span>';
-            imageFile = null;
-            uploadZone.classList.remove('loaded');
-            uploadZone.innerHTML = `
-                <div class="upload-placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <p>点击选择图片</p>
-                </div>
-                <div class="upload-mask"><span>点击更换</span></div>
-            `;
-            imageInput.value = '';
-            updateStrength();
+</div>
+
+<script>
+    const $ = id => document.getElementById(id);
+    
+    const ui = {
+        init: $('initScreen'), title: $('initTitle'), status: $('initStatus'), progress: $('initProgress'),
+        notice: $('noticeContainer'),
+        modal: $('modalOverlay'), mTitle: $('modalTitle'), mText: $('modalText'), mCancel: $('modalCancel'), mConfirm: $('modalConfirm'),
+        srcText: $('srcText'), srcA: $('srcA'), srcB: $('srcB'), keyA: $('keyA'), keyB: $('keyB'), fieldKeyB: $('fieldKeyB'),
+        strFill: $('strFill'), strLabel: $('strLabel'), countSrc: $('countSrc'),
+        upload: $('uploadArea'), uploadText: $('uploadText'), fileInput: $('fileInput'),
+        resEnc: $('resEnc'), resEncBox: $('resEncBox'), metaEnc: $('metaEnc'), btnCopyEnc: $('btnCopyEnc'),
+        cipher: $('cipherText'), decKeyA: $('decKeyA'), decKeyB: $('decKeyB'), fieldDecB: $('fieldDecB'),
+        detectStrip: $('detectStrip'), detectType: $('detectType'), countCipher: $('countCipher'),
+        resDec: $('resDec'), resDecBox: $('resDecBox'), metaDec: $('metaDec'), btnCopyDec: $('btnCopyDec'),
+        imgPrev: $('imgPreview'), decImg: $('decImg'), btnDl: $('btnDl')
+    };
+
+    let mode = 'text';
+    let fileData = null;
+    let modalCb = null;
+
+    // --- 通知系统 (自建) ---
+    function notice(text, type = 'info') {
+        const icons = {
+            success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>',
+            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>',
+            info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01"/></svg>'
+        };
+        const div = document.createElement('div');
+        div.className = `notice ${type}`;
+        div.innerHTML = `${icons[type] || icons.info}<span>${text}</span>`;
+        ui.notice.appendChild(div);
+        
+        // 触发重绘
+        void div.offsetHeight;
+        div.classList.add('show');
+
+        setTimeout(() => {
+            div.classList.remove('show');
+            setTimeout(() => div.remove(), 300);
+        }, 3000);
+    }
+
+    // --- 模态框系统 ---
+    function showModal(title, text, cb) {
+        ui.mTitle.textContent = title;
+        ui.mText.textContent = text;
+        modalCb = cb;
+        ui.modal.classList.add('active');
+    }
+
+    ui.mCancel.onclick = () => ui.modal.classList.remove('active');
+    ui.mConfirm.onclick = () => { if (modalCb) modalCb(); ui.modal.classList.remove('active'); };
+
+    // --- 初始化/清空进度系统 ---
+    function runInitSequence(title = "正在初始化", statusPrefix = "检查", onComplete = null) {
+        ui.init.classList.add('active');
+        ui.title.textContent = title;
+        ui.progress.style.width = '0%';
+        
+        const duration = 10000 + Math.random() * 3000; // 10-13秒
+        const start = Date.now();
+        const steps = [
+            { t: 0, s: "安全环境" },
+            { t: 0.2, s: "浏览器接口" },
+            { t: 0.4, s: "加密模块" },
+            { t: 0.6, s: "内存清理" },
+            { t: 0.8, s: "用户界面" },
+            { t: 0.95, s: "就绪" }
+        ];
+
+        function update() {
+            const elapsed = Date.now() - start;
+            const p = Math.min(1, elapsed / duration);
             
-            // 重置模式到文本
-            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector('.mode-tab[data-mode="text"]').classList.add('active');
-            currentMode = 'text';
-            $('mode-text').classList.remove('hidden');
-            $('mode-dual').classList.add('hidden');
-            $('mode-image').classList.add('hidden');
-            $('pwd-b-group').classList.add('hidden');
-            $('pwd-a-name').textContent = '密码';
-            $('pwd-a-tag').textContent = '必填';
-            $('pwd-a-tag').className = 'tag red';
-            
-            showToast('已清空所有内容', 'success');
-        }
-
-        // 清空解密页 - 增强版
-        function clearDecryptPage() {
-            $('ciphertext').value = '';
-            $('decrypt-pwd-a').value = '';
-            $('decrypt-pwd-b').value = '';
-            $('decrypt-result').innerHTML = '<span class="empty">解密结果将显示在这里...</span>';
-            $('algo-info').classList.add('hidden');
-            $('decrypt-tip').classList.add('hidden');
-            $('decrypt-pwd-b-group').classList.add('hidden');
-            $('img-result').classList.add('hidden');
-            $('decrypt-img').src = '';
-            showToast('已清空所有内容', 'success');
-        }
-
-        // 清空全部 - 超级清空
-        function clearAll() {
-            clearEncryptPage();
-            clearDecryptPage();
-            
-            // 清除可能的本地存储
-            try {
-                localStorage.clear();
-                sessionStorage.clear();
-            } catch (e) {}
-            
-            // 释放图片内存
-            if (imageFile) {
-                imageFile = null;
+            let curr = steps[0].s;
+            for (let i = steps.length - 1; i >= 0; i--) {
+                if (p >= steps[i].t) { curr = steps[i].s; break; }
             }
             
-            showToast('已清空所有缓存和数据', 'success');
-        }
+            ui.status.textContent = `${statusPrefix}${curr}...`;
+            ui.progress.style.width = (p * 100) + '%';
 
-        // 清空按钮事件
-        $('btn-clear').addEventListener('click', () => {
-            showModal('确认清空', '确定要清空加密页面的所有内容吗？此操作不可恢复。', clearEncryptPage);
-        });
-
-        $('btn-clear-decrypt').addEventListener('click', () => {
-            showModal('确认清空', '确定要清空解密页面的所有内容吗？此操作不可恢复。', clearDecryptPage);
-        });
-
-        // 复制按钮
-        function setupCopyBtn(btnId, resultId) {
-            const btn = $(btnId);
-            const result = $(resultId);
-
-            btn.addEventListener('click', async () => {
-                const text = result.textContent;
-                if (!text || text.includes('将显示在这里') || text.includes('[图片已解密]') || text.includes('[请输入密码')) {
-                    showToast('没有可复制的内容', 'error');
-                    return;
-                }
-                try {
-                    await navigator.clipboard.writeText(text);
-                    btn.classList.add('done');
-                    btn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        <span>复制成功</span>
-                    `;
-                    showToast('已复制到剪贴板', 'success');
-                    setTimeout(() => {
-                        btn.classList.remove('done');
-                        btn.innerHTML = `
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
-                            <span>复制结果</span>
-                        `;
-                    }, 2000);
-                } catch {
-                    showToast('复制失败', 'error');
-                }
-            });
-        }
-
-        setupCopyBtn('btn-copy', 'encrypt-result');
-        setupCopyBtn('btn-copy-decrypt', 'decrypt-result');
-
-        // 密文输入检测
-        $('ciphertext').addEventListener('input', () => {
-            const input = $('ciphertext').value.trim();
-            if (input) {
-                const detected = detectAlgo(input);
-                $('algo-text').textContent = '检测到: ' + detected;
-                $('algo-info').classList.remove('hidden');
-
-                if (input.startsWith('DUAL:')) {
-                    $('decrypt-tip').classList.remove('hidden');
-                    $('decrypt-tip-title').textContent = '双瞳密文';
-                    $('decrypt-tip-text').textContent = '密码A只能解密内容A，密码B只能解密内容B';
-                    $('decrypt-pwd-b-group').classList.remove('hidden');
-                } else if (input.startsWith('IMG:')) {
-                    $('decrypt-tip').classList.remove('hidden');
-                    $('decrypt-tip-title').textContent = '图片密文';
-                    $('decrypt-tip-text').textContent = '输入密码后点击解密查看图片';
-                    $('decrypt-pwd-b-group').classList.add('hidden');
-                } else {
-                    $('decrypt-tip').classList.add('hidden');
-                    $('decrypt-pwd-b-group').classList.add('hidden');
-                }
+            if (p < 1) {
+                requestAnimationFrame(update);
             } else {
-                $('algo-info').classList.add('hidden');
-                $('decrypt-tip').classList.add('hidden');
-                $('decrypt-pwd-b-group').classList.add('hidden');
+                setTimeout(() => {
+                    ui.init.classList.remove('active');
+                    if (onComplete) onComplete();
+                    notice('操作完成', 'success');
+                }, 300);
             }
-        });
-    </script>
+        }
+        requestAnimationFrame(update);
+    }
+
+    // --- 核心逻辑 ---
+    const show = e => e && e.classList.remove('hidden');
+    const hide = e => e && e.classList.add('hidden');
+
+    function strength(v) {
+        let s = 0;
+        if (v.length >= 8) s++;
+        if (v.length >= 12) s++;
+        if (/[A-Z]/.test(v)) s++;
+        if (/[0-9]/.test(v)) s++;
+        if (/[^A-Za-z0-9]/.test(v)) s++;
+        return Math.min(5, Math.max(0, s));
+    }
+
+    ui.keyA.oninput = () => {
+        const s = strength(ui.keyA.value);
+        ui.strFill.style.width = (s / 5 * 100) + '%';
+        const colors = ['#d13438', '#d13438', '#ffb900', '#ffb900', '#107c10', '#107c10'];
+        ui.strFill.style.background = colors[s];
+        const labels = ['', '极弱', '弱', '一般', '强', '极强'];
+        ui.strLabel.textContent = labels[s];
+    };
+
+    ui.srcText.oninput = () => ui.countSrc.textContent = ui.srcText.value.length + ' 字符';
+    ui.cipher.oninput = () => {
+        const v = ui.cipher.value.trim();
+        ui.countCipher.textContent = v.length + ' 字符';
+        if (v) {
+            const t = detect(v);
+            ui.detectType.textContent = t;
+            show(ui.detectStrip);
+            if (v.startsWith('DUAL:')) show(ui.fieldDecB); else hide(ui.fieldDecB);
+        } else {
+            hide(ui.detectStrip);
+            hide(ui.fieldDecB);
+        }
+    };
+
+    document.querySelectorAll('.tab').forEach(t => {
+        t.onclick = () => {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            mode = t.dataset.mode;
+            hide($('modeText')); hide($('modeDual')); hide($('modeImage')); hide(ui.fieldKeyB);
+            if (mode === 'text') show($('modeText'));
+            if (mode === 'dual') { show($('modeDual')); show(ui.fieldKeyB); }
+            if (mode === 'image') show($('modeImage'));
+        };
+    });
+
+    ui.upload.onclick = () => ui.fileInput.click();
+    ui.fileInput.onchange = e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = ev => {
+            fileData = ev.target.result.split(',')[1];
+            ui.uploadText.textContent = f.name;
+            ui.upload.classList.add('loaded');
+        };
+        r.readAsDataURL(f);
+    };
+
+    async function derive(pw, salt, algo) {
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
+        const len = algo === 'CTR' ? 128 : 256;
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, { name, length: len }, false, ['encrypt', 'decrypt']);
+    }
+
+    async function enc(data, pw, algo = 'GCM') {
+        const enc = new TextEncoder();
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const ivLen = algo === 'GCM' ? 12 : 16;
+        const iv = crypto.getRandomValues(new Uint8Array(ivLen));
+        const key = await derive(pw, salt, algo);
+        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
+        const param = algo === 'CTR' ? { name, counter: iv, length: 64 } : { name, iv };
+        const cipher = await crypto.subtle.encrypt(param, key, enc.encode(data));
+        const buf = new Uint8Array(salt.length + iv.length + cipher.byteLength);
+        buf.set(salt, 0); buf.set(iv, salt.length); buf.set(new Uint8Array(cipher), salt.length + iv.length);
+        return 'AES' + algo + btoa(String.fromCharCode(...buf));
+    }
+
+    async function dec(data, pw) {
+        let algo = 'GCM';
+        if (data.startsWith('AESCTR')) { algo = 'CTR'; data = data.slice(6); }
+        else if (data.startsWith('AESCBC')) { algo = 'CBC'; data = data.slice(6); }
+        else if (data.startsWith('AESGCM')) { algo = 'GCM'; data = data.slice(6); }
+        const buf = new Uint8Array(atob(data).split('').map(c => c.charCodeAt(0)));
+        const salt = buf.slice(0, 16);
+        const ivLen = algo === 'GCM' ? 12 : 16;
+        const iv = buf.slice(16, 16 + ivLen);
+        const cipher = buf.slice(16 + ivLen);
+        const key = await derive(pw, salt, algo);
+        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
+        const param = algo === 'CTR' ? { name, counter: iv, length: 64 } : { name, iv };
+        const dec = await crypto.subtle.decrypt(param, key, cipher);
+        return { text: new TextDecoder().decode(dec), algo };
+    }
+
+    function detect(d) {
+        if (d.startsWith('DUAL:')) return '双瞳加密';
+        if (d.startsWith('IMG:')) return '图片加密';
+        if (d.startsWith('AESCTR')) return 'AES-128-CTR';
+        if (d.startsWith('AESCBC')) return 'AES-256-CBC';
+        if (d.startsWith('AESGCM')) return 'AES-256-GCM';
+        return '未知格式';
+    }
+
+    $('btnEnc').onclick = async () => {
+        const ka = ui.keyA.value;
+        if (!ka) return notice('请输入密码', 'error');
+        $('btnEnc').disabled = true;
+        ui.metaEnc.textContent = '加密中...';
+        
+        try {
+            let out = '';
+            if (mode === 'text') {
+                const t = ui.srcText.value; if (!t) throw '请输入内容';
+                out = await enc(t, ka, 'GCM');
+            } else if (mode === 'dual') {
+                const ta = ui.srcA.value, tb = ui.srcB.value, kb = ui.keyB.value;
+                if (!ta && !tb) throw '请输入内容';
+                const ea = ta ? await enc(ta, ka, 'GCM') : '';
+                const eb = (tb && kb) ? await enc(tb, kb, 'CBC') : '';
+                out = 'DUAL:' + ea + ':' + eb;
+            } else if (mode === 'image') {
+                if (!fileData) throw '请选择图片';
+                out = 'IMG:' + await enc(fileData, ka, 'GCM');
+            }
+            ui.resEnc.textContent = out;
+            ui.resEncBox.classList.remove('empty');
+            ui.metaEnc.textContent = out.length + ' 字符';
+            show(ui.btnCopyEnc);
+            notice('加密完成', 'success');
+        } catch (e) {
+            notice('加密失败: ' + e, 'error');
+            ui.metaEnc.textContent = '失败';
+        }
+        $('btnEnc').disabled = false;
+    };
+
+    $('btnDec').onclick = async () => {
+        const src = ui.cipher.value.trim(), ka = ui.decKeyA.value;
+        if (!src) return notice('请输入密文', 'error');
+        if (!ka) return notice('请输入密码', 'error');
+        $('btnDec').disabled = true;
+        ui.metaDec.textContent = '解密中...';
+        hide(ui.imgPrev);
+
+        try {
+            if (src.startsWith('IMG:')) {
+                const { text: b64 } = await dec(src.slice(4), ka);
+                ui.decImg.src = 'data:image/jpeg;base64,' + b64;
+                ui.btnDl.href = ui.decImg.src;
+                show(ui.imgPrev);
+                ui.resDec.textContent = '[图片已解密]';
+                ui.metaDec.textContent = '图片';
+            } else if (src.startsWith('DUAL:')) {
+                const parts = src.slice(5).split(':');
+                let res = '';
+                const kb = ui.decKeyB.value;
+                if (parts[0]) {
+                    try { res += '--- A ---\n' + (await dec(parts[0], ka)).text + '\n\n'; }
+                    catch { res += '--- A ---\n[密码错误]\n\n'; }
+                }
+                if (parts[1]) {
+                    if (kb) {
+                        try { res += '--- B ---\n' + (await dec(parts[1], kb)).text; }
+                        catch { res += '--- B ---\n[密码错误]'; }
+                    } else { res += '--- B ---\n[需输入密码B]'; }
+                }
+                ui.resDec.textContent = res;
+                ui.metaDec.textContent = '双瞳';
+            } else {
+                const { text, algo } = await dec(src, ka);
+                ui.resDec.textContent = text;
+                ui.metaDec.textContent = 'AES-256-' + algo;
+                ui.detectType.textContent = 'AES-256-' + algo;
+            }
+            ui.resDecBox.classList.remove('empty');
+            show(ui.btnCopyDec);
+            notice('解密完成', 'success');
+        } catch (e) {
+            notice('解密失败: 密码错误或数据损坏', 'error');
+            ui.metaDec.textContent = '失败';
+        }
+        $('btnDec').disabled = false;
+    };
+
+    // --- 清空按钮逻辑 (触发进度条) ---
+    function resetAllData() {
+        ui.srcText.value = ''; ui.srcA.value = ''; ui.srcB.value = '';
+        ui.keyA.value = ''; ui.keyB.value = ''; ui.strFill.style.width = 0; ui.strLabel.textContent = '';
+        ui.countSrc.textContent = '0 字符';
+        ui.resEnc.textContent = '加密结果将显示在这里'; ui.resEncBox.classList.add('empty'); hide(ui.btnCopyEnc);
+        ui.metaEnc.textContent = '等待操作';
+        fileData = null; ui.uploadText.textContent = '点击选择图片'; ui.upload.classList.remove('loaded'); ui.fileInput.value = '';
+
+        ui.cipher.value = ''; ui.decKeyA.value = ''; ui.decKeyB.value = '';
+        ui.countCipher.textContent = '0 字符';
+        ui.resDec.textContent = '解密结果将显示在这里'; ui.resDecBox.classList.add('empty'); hide(ui.btnCopyDec);
+        ui.metaDec.textContent = '等待操作';
+        hide(ui.detectStrip); hide(ui.fieldDecB); hide(ui.imgPrev);
+    }
+
+    $('btnClearEnc').onclick = () => showModal('清空确认', '确定要清空所有内容并重置环境吗？', () => {
+        runInitSequence("正在清空", "清理", resetAllData);
+    });
+
+    $('btnClearDec').onclick = () => showModal('清空确认', '确定要清空所有内容并重置环境吗？', () => {
+        runInitSequence("正在清空", "清理", resetAllData);
+    });
+
+    // --- 复制功能 ---
+    ui.btnCopyEnc.onclick = async () => {
+        try { await navigator.clipboard.writeText(ui.resEnc.textContent); notice('已复制', 'success'); }
+        catch { notice('复制失败', 'error'); }
+    };
+
+    ui.btnCopyDec.onclick = async () => {
+        try { await navigator.clipboard.writeText(ui.resDec.textContent); notice('已复制', 'success'); }
+        catch { notice('复制失败', 'error'); }
+    };
+
+    // --- 启动 ---
+    if (!window.crypto || !window.crypto.subtle) {
+        notice('当前环境不支持安全加密', 'error');
+    } else {
+        runInitSequence();
+    }
+</script>
 </body>
 </html>
