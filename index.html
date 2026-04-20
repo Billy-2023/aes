@@ -192,10 +192,7 @@
         .modal-btn:not(:last-child) { border-right: 1px solid var(--border); }
 
         /* 主布局 */
-        .app {
-            max-width: 100%;
-            margin: 0 auto;
-        }
+        .app { max-width: 100%; margin: 0 auto; }
 
         header {
             background: var(--card);
@@ -229,11 +226,7 @@
             font-weight: 600;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0;
-        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 0; }
 
         @media (min-width: 900px) {
             .grid { grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
@@ -252,12 +245,45 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .panel-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.125rem; }
         .panel-sub { font-size: 0.75rem; color: var(--muted); }
 
-        /* 表单元素 */
+        /* 算法选择器 */
+        .algo-selector {
+            display: flex;
+            gap: 0.375rem;
+            align-items: center;
+        }
+
+        .algo-label {
+            font-size: 0.6875rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .algo-btn {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: var(--bg);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            line-height: 1;
+        }
+
+        .algo-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        /* Tabs */
         .tabs {
             display: flex;
             border-bottom: 2px solid var(--border);
@@ -312,22 +338,14 @@
             border: 1px solid var(--border);
             background: var(--bg);
             font-family: inherit;
-            font-size: 16px; /* 防止iOS缩放 */
+            font-size: 16px;
             color: var(--fg);
             border-radius: 4px;
             transition: border-color 0.2s;
         }
 
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
         .row {
             display: grid;
@@ -359,14 +377,8 @@
 
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-primary:active { background: var(--accent-dark); }
-        
         .btn-danger { background: var(--danger); color: #fff; }
-        
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--fg);
-        }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--fg); }
         .btn-outline:active { background: var(--bg); }
 
         .actions {
@@ -382,7 +394,6 @@
             border: 1px solid var(--border);
             border-radius: 4px;
             margin-top: 1rem;
-            position: relative;
         }
 
         .result-content {
@@ -410,13 +421,9 @@
         }
 
         .result-meta { font-size: 0.6875rem; color: var(--muted); }
-        
-        .btn-sm {
-            padding: 0.375rem 0.625rem;
-            font-size: 0.75rem;
-        }
 
-        /* 智能提示条 */
+        .btn-sm { padding: 0.375rem 0.625rem; font-size: 0.75rem; }
+
         .info-strip {
             background: #e1f5fe;
             padding: 0.625rem 0.75rem;
@@ -459,16 +466,8 @@
             transition: width 0.2s, background 0.2s;
         }
 
-        .img-preview {
-            margin-top: 0.75rem;
-            text-align: center;
-        }
-        
-        .img-preview img {
-            max-width: 100%;
-            max-height: 150px;
-            border-radius: 4px;
-        }
+        .img-preview { margin-top: 0.75rem; text-align: center; }
+        .img-preview img { max-width: 100%; max-height: 150px; border-radius: 4px; }
 
         .hidden { display: none !important; }
     </style>
@@ -511,12 +510,18 @@
     </header>
 
     <div class="grid">
-        <!-- 加密区 -->
+        <!-- ==================== 加密面板 ==================== -->
         <div class="panel">
             <div class="panel-header">
                 <div>
                     <div class="panel-title">加密工具</div>
                     <div class="panel-sub">本地处理，数据不上传</div>
+                </div>
+                <div class="algo-selector">
+                    <span class="algo-label">算法</span>
+                    <button class="algo-btn active" data-algo="GCM">AES-GCM</button>
+                    <button class="algo-btn" data-algo="CBC">AES-CBC</button>
+                    <button class="algo-btn" data-algo="CTR">AES-CTR</button>
                 </div>
             </div>
 
@@ -534,22 +539,20 @@
             </div>
 
             <div id="modeDual" class="hidden">
-                <div class="info-strip">
-                    <span>双瞳模式：密码A加密内容A，密码B加密内容B</span>
-                </div>
+                <div class="info-strip"><span>双瞳模式：密码A 加密内容A，密码B 加密内容B</span></div>
                 <div class="field">
                     <div class="label"><span>内容 A</span><span class="label-badge">密码A</span></div>
                     <textarea id="srcA" placeholder="第一段内容..."></textarea>
                 </div>
                 <div class="field">
                     <div class="label"><span>内容 B</span><span class="label-badge warn">密码B</span></div>
-                    <textarea id="srcB" placeholder="第二段内容..."></textarea>
+                    <textarea id="srcB" placeholder="第二段内容（需同时填密码B）..."></textarea>
                 </div>
             </div>
 
             <div id="modeImage" class="hidden">
                 <div class="field">
-                    <div class="label">选择文件</div>
+                    <div class="label">选择图片文件</div>
                     <div class="upload-area" id="uploadArea">
                         <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         <div class="upload-text" id="uploadText">点击选择图片</div>
@@ -584,12 +587,12 @@
             </div>
         </div>
 
-        <!-- 解密区 -->
+        <!-- ==================== 解密面板 ==================== -->
         <div class="panel">
             <div class="panel-header">
                 <div>
                     <div class="panel-title">解密工具</div>
-                    <div class="panel-sub">自动识别算法</div>
+                    <div class="panel-sub">自动识别算法 · 智能分块解析</div>
                 </div>
             </div>
 
@@ -629,341 +632,615 @@
 
             <div class="img-preview hidden" id="imgPreview">
                 <img id="decImg" src="" alt="">
-                <a class="btn btn-sm btn-outline" id="btnDl" download="decrypted.jpg" style="margin-top:0.5rem;">下载图片</a>
+                <a class="btn btn-sm btn-outline" id="btnDl" style="margin-top:0.5rem;">下载图片</a>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const $ = id => document.getElementById(id);
-    
-    const ui = {
-        init: $('initScreen'), title: $('initTitle'), status: $('initStatus'), progress: $('initProgress'),
-        notice: $('noticeContainer'),
-        modal: $('modalOverlay'), mTitle: $('modalTitle'), mText: $('modalText'), mCancel: $('modalCancel'), mConfirm: $('modalConfirm'),
-        srcText: $('srcText'), srcA: $('srcA'), srcB: $('srcB'), keyA: $('keyA'), keyB: $('keyB'), fieldKeyB: $('fieldKeyB'),
-        strFill: $('strFill'), strLabel: $('strLabel'), countSrc: $('countSrc'),
-        upload: $('uploadArea'), uploadText: $('uploadText'), fileInput: $('fileInput'),
-        resEnc: $('resEnc'), resEncBox: $('resEncBox'), metaEnc: $('metaEnc'), btnCopyEnc: $('btnCopyEnc'),
-        cipher: $('cipherText'), decKeyA: $('decKeyA'), decKeyB: $('decKeyB'), fieldDecB: $('fieldDecB'),
-        detectStrip: $('detectStrip'), detectType: $('detectType'), countCipher: $('countCipher'),
-        resDec: $('resDec'), resDecBox: $('resDecBox'), metaDec: $('metaDec'), btnCopyDec: $('btnCopyDec'),
-        imgPrev: $('imgPreview'), decImg: $('decImg'), btnDl: $('btnDl')
-    };
+'use strict';
 
-    let mode = 'text';
-    let fileData = null;
-    let modalCb = null;
+// ================================================================
+// 工具函数
+// ================================================================
 
-    // --- 通知系统 (自建) ---
-    function notice(text, type = 'info') {
-        const icons = {
-            success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>',
-            error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>',
-            info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01"/></svg>'
-        };
-        const div = document.createElement('div');
-        div.className = `notice ${type}`;
-        div.innerHTML = `${icons[type] || icons.info}<span>${text}</span>`;
-        ui.notice.appendChild(div);
-        
-        // 触发重绘
-        void div.offsetHeight;
-        div.classList.add('show');
+const $ = id => document.getElementById(id);
 
-        setTimeout(() => {
-            div.classList.remove('show');
-            setTimeout(() => div.remove(), 300);
-        }, 3000);
-    }
+/** ArrayBuffer → 十六进制字符串 */
+function buf2hex(buf) {
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-    // --- 模态框系统 ---
-    function showModal(title, text, cb) {
-        ui.mTitle.textContent = title;
-        ui.mText.textContent = text;
-        modalCb = cb;
-        ui.modal.classList.add('active');
-    }
+/** 十六进制字符串 → Uint8Array */
+function hex2buf(hex) {
+    const bytes = new Uint8Array(hex.length >> 1);
+    for (let i = 0; i < hex.length; i += 2) bytes[i >> 1] = parseInt(hex.substr(i, 2), 16);
+    return bytes;
+}
 
-    ui.mCancel.onclick = () => ui.modal.classList.remove('active');
-    ui.mConfirm.onclick = () => { if (modalCb) modalCb(); ui.modal.classList.remove('active'); };
+/** 识别 base64 图片的 MIME 类型（检测文件头 magic bytes） */
+function detectImageMime(b64data) {
+    const first = atob(b64data.slice(0, 12)).split('').map(c => c.charCodeAt(0));
+    if (first[0] === 0x89 && first[1] === 0x50 && first[2] === 0x4E && first[3] === 0x47) return 'image/png';
+    if (first[0] === 0xFF && first[1] === 0xD8 && first[2] === 0xFF) return 'image/jpeg';
+    if (first[0] === 0x47 && first[1] === 0x49 && first[2] === 0x46) return 'image/gif';
+    if (first[0] === 0x52 && first[1] === 0x49 && first[2] === 0x46 && first[3] === 0x46) return 'image/webp';
+    return 'image/jpeg'; // 默认
+}
 
-    // --- 初始化/清空进度系统 ---
-    function runInitSequence(title = "正在初始化", statusPrefix = "检查", onComplete = null) {
-        ui.init.classList.add('active');
-        ui.title.textContent = title;
-        ui.progress.style.width = '0%';
-        
-        const duration = 10000 + Math.random() * 3000; // 10-13秒
-        const start = Date.now();
-        const steps = [
-            { t: 0, s: "安全环境" },
-            { t: 0.2, s: "浏览器接口" },
-            { t: 0.4, s: "加密模块" },
-            { t: 0.6, s: "内存清理" },
-            { t: 0.8, s: "用户界面" },
-            { t: 0.95, s: "就绪" }
-        ];
+// ================================================================
+// 密码学核心
+// ================================================================
 
-        function update() {
-            const elapsed = Date.now() - start;
-            const p = Math.min(1, elapsed / duration);
-            
-            let curr = steps[0].s;
-            for (let i = steps.length - 1; i >= 0; i--) {
-                if (p >= steps[i].t) { curr = steps[i].s; break; }
-            }
-            
-            ui.status.textContent = `${statusPrefix}${curr}...`;
-            ui.progress.style.width = (p * 100) + '%';
+/**
+ * 算法元数据表
+ * ivLen: IV 字节数（CTR=16, CBC=16, GCM=12）
+ * keyLen: 密钥位数
+ * ctrLen: CTR counter 位数（仅 CTR）
+ */
+const ALGO = {
+    GCM: { name: 'AES-GCM', ivLen: 12, keyLen: 256 },
+    CBC: { name: 'AES-CBC', ivLen: 16, keyLen: 256 },
+    CTR: { name: 'AES-CTR', ivLen: 16, keyLen: 128, ctrLen: 64 }
+};
 
-            if (p < 1) {
-                requestAnimationFrame(update);
-            } else {
-                setTimeout(() => {
-                    ui.init.classList.remove('active');
-                    if (onComplete) onComplete();
-                    notice('操作完成', 'success');
-                }, 300);
-            }
-        }
-        requestAnimationFrame(update);
-    }
+/**
+ * 从密码 + salt 派生 AES 密钥
+ * @param {string} password
+ * @param {Uint8Array} salt
+ * @param {string} algo - 'GCM' | 'CBC' | 'CTR'
+ */
+async function deriveKey(password, salt, algo) {
+    const enc = new TextEncoder();
+    const base = await crypto.subtle.importKey(
+        'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+    );
+    const { name, keyLen } = ALGO[algo];
+    return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+        base,
+        { name, length: keyLen },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
 
-    // --- 核心逻辑 ---
-    const show = e => e && e.classList.remove('hidden');
-    const hide = e => e && e.classList.add('hidden');
+/**
+ * 构建 AES 加解密参数对象（加密/解密共用）
+ * @param {string} algo
+ * @param {Uint8Array} iv
+ */
+function makeAesParams(algo, iv) {
+    const { name, ctrLen } = ALGO[algo];
+    if (algo === 'CTR') return { name, counter: iv, length: ctrLen };
+    return { name, iv };
+}
 
-    function strength(v) {
-        let s = 0;
-        if (v.length >= 8) s++;
-        if (v.length >= 12) s++;
-        if (/[A-Z]/.test(v)) s++;
-        if (/[0-9]/.test(v)) s++;
-        if (/[^A-Za-z0-9]/.test(v)) s++;
-        return Math.min(5, Math.max(0, s));
-    }
+/**
+ * 统一加密
+ * 输出格式: PREFIX:hexSalt:hexIv:hexCipher
+ *   - PREFIX     = AESGCM | AESCBC | AESCTR
+ *   - hexSalt    = 32 hex chars (16 bytes)
+ *   - hexIv      = 24 hex (GCM) 或 32 hex (CBC/CTR)
+ *   - hexCipher  = 密文 hex（纯 0-9a-f，无冒号，无 base64）
+ */
+async function aesEncrypt(plaintext, password, algo = 'GCM') {
+    const enc = new TextEncoder();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv   = crypto.getRandomValues(new Uint8Array(ALGO[algo].ivLen));
+    const key  = await deriveKey(password, salt, algo);
+    const ct   = await crypto.subtle.encrypt(makeAesParams(algo, iv), key, enc.encode(plaintext));
 
-    ui.keyA.oninput = () => {
-        const s = strength(ui.keyA.value);
-        ui.strFill.style.width = (s / 5 * 100) + '%';
-        const colors = ['#d13438', '#d13438', '#ffb900', '#ffb900', '#107c10', '#107c10'];
-        ui.strFill.style.background = colors[s];
-        const labels = ['', '极弱', '弱', '一般', '强', '极强'];
-        ui.strLabel.textContent = labels[s];
-    };
+    const prefix = { GCM: 'AESGCM', CBC: 'AESCBC', CTR: 'AESCTR' }[algo];
+    return `${prefix}:${buf2hex(salt)}:${buf2hex(iv)}:${buf2hex(ct)}`;
+}
 
-    ui.srcText.oninput = () => ui.countSrc.textContent = ui.srcText.value.length + ' 字符';
-    ui.cipher.oninput = () => {
-        const v = ui.cipher.value.trim();
-        ui.countCipher.textContent = v.length + ' 字符';
-        if (v) {
-            const t = detect(v);
-            ui.detectType.textContent = t;
-            show(ui.detectStrip);
-            if (v.startsWith('DUAL:')) show(ui.fieldDecB); else hide(ui.fieldDecB);
-        } else {
-            hide(ui.detectStrip);
-            hide(ui.fieldDecB);
-        }
-    };
+/**
+ * 统一解密
+ * @param {string} data - 格式 PREFIX:hexSalt:hexIv:hexCipher
+ * @param {string} password
+ * @returns {{ text: string, algo: string }}
+ */
+async function aesDecrypt(data, password) {
+    const parts = data.split(':');
+    if (parts.length !== 4) throw new Error('数据格式无效（缺少分隔符）');
 
-    document.querySelectorAll('.tab').forEach(t => {
-        t.onclick = () => {
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            t.classList.add('active');
-            mode = t.dataset.mode;
-            hide($('modeText')); hide($('modeDual')); hide($('modeImage')); hide(ui.fieldKeyB);
-            if (mode === 'text') show($('modeText'));
-            if (mode === 'dual') { show($('modeDual')); show(ui.fieldKeyB); }
-            if (mode === 'image') show($('modeImage'));
-        };
-    });
+    const [prefix, hexSalt, hexIv] = parts;
+    const algoMap = { AESGCM: 'GCM', AESCBC: 'CBC', AESCTR: 'CTR' };
+    if (!algoMap[prefix]) throw new Error(`不支持的格式：${prefix}`);
 
-    ui.upload.onclick = () => ui.fileInput.click();
-    ui.fileInput.onchange = e => {
-        const f = e.target.files[0];
-        if (!f) return;
-        const r = new FileReader();
-        r.onload = ev => {
-            fileData = ev.target.result.split(',')[1];
-            ui.uploadText.textContent = f.name;
-            ui.upload.classList.add('loaded');
-        };
-        r.readAsDataURL(f);
-    };
+    const algo       = algoMap[prefix];
+    const salt       = hex2buf(hexSalt);
+    const iv         = hex2buf(hexIv);
+    const cipherBytes = hex2buf(parts[3]); // parts[3] = hexCipher，纯 hex 无冒号
 
-    async function derive(pw, salt, algo) {
-        const enc = new TextEncoder();
-        const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
-        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-        const len = algo === 'CTR' ? 128 : 256;
-        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, { name, length: len }, false, ['encrypt', 'decrypt']);
-    }
+    if (salt.length !== 16) throw new Error('Salt 长度无效');
+    if (iv.length !== ALGO[algo].ivLen) throw new Error('IV 长度与算法不匹配');
 
-    async function enc(data, pw, algo = 'GCM') {
-        const enc = new TextEncoder();
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const ivLen = algo === 'GCM' ? 12 : 16;
-        const iv = crypto.getRandomValues(new Uint8Array(ivLen));
-        const key = await derive(pw, salt, algo);
-        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-        const param = algo === 'CTR' ? { name, counter: iv, length: 64 } : { name, iv };
-        const cipher = await crypto.subtle.encrypt(param, key, enc.encode(data));
-        const buf = new Uint8Array(salt.length + iv.length + cipher.byteLength);
-        buf.set(salt, 0); buf.set(iv, salt.length); buf.set(new Uint8Array(cipher), salt.length + iv.length);
-        return 'AES' + algo + btoa(String.fromCharCode(...buf));
-    }
+    const key = await deriveKey(password, salt, algo);
 
-    async function dec(data, pw) {
-        let algo = 'GCM';
-        if (data.startsWith('AESCTR')) { algo = 'CTR'; data = data.slice(6); }
-        else if (data.startsWith('AESCBC')) { algo = 'CBC'; data = data.slice(6); }
-        else if (data.startsWith('AESGCM')) { algo = 'GCM'; data = data.slice(6); }
-        const buf = new Uint8Array(atob(data).split('').map(c => c.charCodeAt(0)));
-        const salt = buf.slice(0, 16);
-        const ivLen = algo === 'GCM' ? 12 : 16;
-        const iv = buf.slice(16, 16 + ivLen);
-        const cipher = buf.slice(16 + ivLen);
-        const key = await derive(pw, salt, algo);
-        const name = algo === 'CTR' ? 'AES-CTR' : algo === 'CBC' ? 'AES-CBC' : 'AES-GCM';
-        const param = algo === 'CTR' ? { name, counter: iv, length: 64 } : { name, iv };
-        const dec = await crypto.subtle.decrypt(param, key, cipher);
+    try {
+        const dec = await crypto.subtle.decrypt(makeAesParams(algo, iv), key, cipherBytes);
         return { text: new TextDecoder().decode(dec), algo };
+    } catch {
+        throw new Error('密码错误或数据损坏');
     }
+}
 
-    function detect(d) {
-        if (d.startsWith('DUAL:')) return '双瞳加密';
-        if (d.startsWith('IMG:')) return '图片加密';
-        if (d.startsWith('AESCTR')) return 'AES-128-CTR';
-        if (d.startsWith('AESCBC')) return 'AES-256-CBC';
-        if (d.startsWith('AESGCM')) return 'AES-256-GCM';
-        return '未知格式';
-    }
+/**
+ * 识别密文类型（仅做展示提示，不做解密判断）
+ */
+function detectCipherType(d) {
+    if (d.startsWith('DUAL:')) return '双瞳加密';
+    if (d.startsWith('IMG:'))  return '图片加密';
+    if (d.startsWith('AESCTR:')) return 'AES-CTR';
+    if (d.startsWith('AESCBC:')) return 'AES-CBC';
+    if (d.startsWith('AESGCM:')) return 'AES-GCM';
+    return '未知格式';
+}
 
-    $('btnEnc').onclick = async () => {
-        const ka = ui.keyA.value;
-        if (!ka) return notice('请输入密码', 'error');
-        $('btnEnc').disabled = true;
-        ui.metaEnc.textContent = '加密中...';
-        
-        try {
-            let out = '';
-            if (mode === 'text') {
-                const t = ui.srcText.value; if (!t) throw '请输入内容';
-                out = await enc(t, ka, 'GCM');
-            } else if (mode === 'dual') {
-                const ta = ui.srcA.value, tb = ui.srcB.value, kb = ui.keyB.value;
-                if (!ta && !tb) throw '请输入内容';
-                const ea = ta ? await enc(ta, ka, 'GCM') : '';
-                const eb = (tb && kb) ? await enc(tb, kb, 'CBC') : '';
-                out = 'DUAL:' + ea + ':' + eb;
-            } else if (mode === 'image') {
-                if (!fileData) throw '请选择图片';
-                out = 'IMG:' + await enc(fileData, ka, 'GCM');
-            }
-            ui.resEnc.textContent = out;
-            ui.resEncBox.classList.remove('empty');
-            ui.metaEnc.textContent = out.length + ' 字符';
-            show(ui.btnCopyEnc);
-            notice('加密完成', 'success');
-        } catch (e) {
-            notice('加密失败: ' + e, 'error');
-            ui.metaEnc.textContent = '失败';
+// ================================================================
+// 应用状态
+// ================================================================
+
+const state = {
+    mode: 'text',
+    selectedAlgo: 'GCM',
+    fileData: null   // base64 数据（无 data: 前缀）
+};
+
+// ================================================================
+// UI 元素缓存
+// ================================================================
+
+const ui = {
+    init: $('initScreen'), title: $('initTitle'),
+    status: $('initStatus'), progress: $('initProgress'),
+    notice: $('noticeContainer'),
+    modal: $('modalOverlay'),
+    mTitle: $('modalTitle'), mText: $('modalText'),
+    mCancel: $('modalCancel'), mConfirm: $('modalConfirm'),
+    // 加密区
+    srcText: $('srcText'), srcA: $('srcA'), srcB: $('srcB'),
+    keyA: $('keyA'), keyB: $('keyB'), fieldKeyB: $('fieldKeyB'),
+    strFill: $('strFill'), strLabel: $('strLabel'), countSrc: $('countSrc'),
+    upload: $('uploadArea'), uploadText: $('uploadText'), fileInput: $('fileInput'),
+    resEnc: $('resEnc'), resEncBox: $('resEncBox'), metaEnc: $('metaEnc'), btnCopyEnc: $('btnCopyEnc'),
+    // 解密区
+    cipher: $('cipherText'), decKeyA: $('decKeyA'), decKeyB: $('decKeyB'), fieldDecB: $('fieldDecB'),
+    detectStrip: $('detectStrip'), detectType: $('detectType'), countCipher: $('countCipher'),
+    resDec: $('resDec'), resDecBox: $('resDecBox'), metaDec: $('metaDec'), btnCopyDec: $('btnCopyDec'),
+    imgPrev: $('imgPreview'), decImg: $('decImg'), btnDl: $('btnDl')
+};
+
+let modalCb = null;
+const show = e => e && e.classList.remove('hidden');
+const hide = e => e && e.classList.add('hidden');
+
+// ================================================================
+// 通知系统
+// ================================================================
+
+const ICONS = {
+    success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>`,
+    error:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>`,
+    info:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4m0 4h.01"/></svg>`
+};
+
+function notice(text, type = 'info') {
+    const div = document.createElement('div');
+    div.className = `notice ${type}`;
+    div.innerHTML = `${ICONS[type] || ICONS.info}<span>${text}</span>`;
+    ui.notice.appendChild(div);
+    void div.offsetHeight;
+    div.classList.add('show');
+    setTimeout(() => {
+        div.classList.remove('show');
+        setTimeout(() => div.remove(), 300);
+    }, 3000);
+}
+
+// ================================================================
+// 模态框
+// ================================================================
+
+function showModal(title, text, cb) {
+    ui.mTitle.textContent = title;
+    ui.mText.textContent = text;
+    modalCb = cb;
+    ui.modal.classList.add('active');
+}
+
+ui.mCancel.onclick = () => ui.modal.classList.remove('active');
+ui.mConfirm.onclick = () => { if (modalCb) modalCb(); ui.modal.classList.remove('active'); };
+
+// ================================================================
+// 进度动画（合理时长：1.2s）
+// ================================================================
+
+function runProgress(title, statusPrefix, duration = 1200, onComplete) {
+    ui.init.classList.add('active');
+    ui.title.textContent = title;
+    ui.progress.style.width = '0%';
+
+    const steps = [
+        { t: 0.00, s: '安全环境' },
+        { t: 0.35, s: '加密模块' },
+        { t: 0.70, s: '界面就绪' },
+        { t: 1.00, s: '完成' }
+    ];
+
+    let raf;
+    const start = performance.now();
+
+    function update(now) {
+        const p = Math.min(1, (now - start) / duration);
+
+        let curr = steps[0].s;
+        for (let i = steps.length - 1; i >= 0; i--) {
+            if (p >= steps[i].t) { curr = steps[i].s; break; }
         }
-        $('btnEnc').disabled = false;
-    };
 
-    $('btnDec').onclick = async () => {
-        const src = ui.cipher.value.trim(), ka = ui.decKeyA.value;
-        if (!src) return notice('请输入密文', 'error');
-        if (!ka) return notice('请输入密码', 'error');
-        $('btnDec').disabled = true;
-        ui.metaDec.textContent = '解密中...';
-        hide(ui.imgPrev);
+        ui.status.textContent = `${statusPrefix}${curr}...`;
+        ui.progress.style.width = `${(p * 100).toFixed(1)}%`;
 
-        try {
-            if (src.startsWith('IMG:')) {
-                const { text: b64 } = await dec(src.slice(4), ka);
-                ui.decImg.src = 'data:image/jpeg;base64,' + b64;
-                ui.btnDl.href = ui.decImg.src;
-                show(ui.imgPrev);
-                ui.resDec.textContent = '[图片已解密]';
-                ui.metaDec.textContent = '图片';
-            } else if (src.startsWith('DUAL:')) {
-                const parts = src.slice(5).split(':');
-                let res = '';
-                const kb = ui.decKeyB.value;
-                if (parts[0]) {
-                    try { res += '--- A ---\n' + (await dec(parts[0], ka)).text + '\n\n'; }
-                    catch { res += '--- A ---\n[密码错误]\n\n'; }
-                }
-                if (parts[1]) {
-                    if (kb) {
-                        try { res += '--- B ---\n' + (await dec(parts[1], kb)).text; }
-                        catch { res += '--- B ---\n[密码错误]'; }
-                    } else { res += '--- B ---\n[需输入密码B]'; }
-                }
-                ui.resDec.textContent = res;
-                ui.metaDec.textContent = '双瞳';
-            } else {
-                const { text, algo } = await dec(src, ka);
-                ui.resDec.textContent = text;
-                ui.metaDec.textContent = 'AES-256-' + algo;
-                ui.detectType.textContent = 'AES-256-' + algo;
-            }
-            ui.resDecBox.classList.remove('empty');
-            show(ui.btnCopyDec);
-            notice('解密完成', 'success');
-        } catch (e) {
-            notice('解密失败: 密码错误或数据损坏', 'error');
-            ui.metaDec.textContent = '失败';
+        if (p < 1) {
+            raf = requestAnimationFrame(update);
+        } else {
+            ui.init.classList.remove('active');
+            if (onComplete) onComplete();
         }
-        $('btnDec').disabled = false;
-    };
-
-    // --- 清空按钮逻辑 (触发进度条) ---
-    function resetAllData() {
-        ui.srcText.value = ''; ui.srcA.value = ''; ui.srcB.value = '';
-        ui.keyA.value = ''; ui.keyB.value = ''; ui.strFill.style.width = 0; ui.strLabel.textContent = '';
-        ui.countSrc.textContent = '0 字符';
-        ui.resEnc.textContent = '加密结果将显示在这里'; ui.resEncBox.classList.add('empty'); hide(ui.btnCopyEnc);
-        ui.metaEnc.textContent = '等待操作';
-        fileData = null; ui.uploadText.textContent = '点击选择图片'; ui.upload.classList.remove('loaded'); ui.fileInput.value = '';
-
-        ui.cipher.value = ''; ui.decKeyA.value = ''; ui.decKeyB.value = '';
-        ui.countCipher.textContent = '0 字符';
-        ui.resDec.textContent = '解密结果将显示在这里'; ui.resDecBox.classList.add('empty'); hide(ui.btnCopyDec);
-        ui.metaDec.textContent = '等待操作';
-        hide(ui.detectStrip); hide(ui.fieldDecB); hide(ui.imgPrev);
     }
 
-    $('btnClearEnc').onclick = () => showModal('清空确认', '确定要清空所有内容并重置环境吗？', () => {
-        runInitSequence("正在清空", "清理", resetAllData);
-    });
+    raf = requestAnimationFrame(update);
+}
 
-    $('btnClearDec').onclick = () => showModal('清空确认', '确定要清空所有内容并重置环境吗？', () => {
-        runInitSequence("正在清空", "清理", resetAllData);
-    });
+// ================================================================
+// 密码强度
+// ================================================================
 
-    // --- 复制功能 ---
-    ui.btnCopyEnc.onclick = async () => {
-        try { await navigator.clipboard.writeText(ui.resEnc.textContent); notice('已复制', 'success'); }
-        catch { notice('复制失败', 'error'); }
+const STRENGTH_COLORS = ['', '#d13438', '#d13438', '#ffb900', '#ffb900', '#107c10'];
+const STRENGTH_LABELS = ['', '极弱', '弱', '一般', '强', '极强'];
+
+function calcStrength(v) {
+    if (!v) return 0;
+    let s = 0;
+    if (v.length >= 8)  s++;
+    if (v.length >= 12) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    return Math.min(5, s);
+}
+
+ui.keyA.oninput = () => {
+    const s = calcStrength(ui.keyA.value);
+    ui.strFill.style.width = `${(s / 5) * 100}%`;
+    ui.strFill.style.background = STRENGTH_COLORS[s];
+    ui.strLabel.textContent = STRENGTH_LABELS[s];
+};
+
+ui.srcText.oninput = () => ui.countSrc.textContent = `${ui.srcText.value.length} 字符`;
+
+// ================================================================
+// 密文检测
+// ================================================================
+
+ui.cipher.oninput = () => {
+    const v = ui.cipher.value.trim();
+    ui.countCipher.textContent = `${v.length} 字符`;
+
+    if (!v) { hide(ui.detectStrip); hide(ui.fieldDecB); return; }
+
+    const type = detectCipherType(v);
+    ui.detectType.textContent = type;
+    show(ui.detectStrip);
+    v.startsWith('DUAL:') ? show(ui.fieldDecB) : hide(ui.fieldDecB);
+};
+
+// ================================================================
+// Tab 切换
+// ================================================================
+
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        state.mode = tab.dataset.mode;
+
+        hide($('modeText')); hide($('modeDual')); hide($('modeImage'));
+        hide(ui.fieldKeyB);
+
+        if (state.mode === 'text')  show($('modeText'));
+        if (state.mode === 'dual')  { show($('modeDual'));  show(ui.fieldKeyB); }
+        if (state.mode === 'image') show($('modeImage'));
     };
+});
 
-    ui.btnCopyDec.onclick = async () => {
-        try { await navigator.clipboard.writeText(ui.resDec.textContent); notice('已复制', 'success'); }
-        catch { notice('复制失败', 'error'); }
+// ================================================================
+// 算法切换
+// ================================================================
+
+document.querySelectorAll('.algo-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.selectedAlgo = btn.dataset.algo;
     };
+});
 
-    // --- 启动 ---
+// ================================================================
+// 文件上传
+// ================================================================
+
+ui.upload.onclick = () => ui.fileInput.click();
+
+ui.fileInput.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        // 去掉 "data:image/xxx;base64," 前缀，只保留纯数据
+        state.fileData = ev.target.result.split(',')[1];
+        ui.uploadText.textContent = file.name;
+        ui.upload.classList.add('loaded');
+    };
+    reader.readAsDataURL(file);
+};
+
+// ================================================================
+// 加密
+// ================================================================
+
+$('btnEnc').onclick = async () => {
+    const keyA = ui.keyA.value.trim();
+    if (!keyA) return notice('请输入密码 A', 'error');
+
+    const algo = state.selectedAlgo;
+    $('btnEnc').disabled = true;
+    ui.metaEnc.textContent = '加密中...';
+
+    try {
+        let output = '';
+
+        if (state.mode === 'text') {
+            const t = ui.srcText.value;
+            if (!t) throw new Error('请输入明文内容');
+            output = await aesEncrypt(t, keyA, algo);
+
+        } else if (state.mode === 'dual') {
+            const ta = ui.srcA.value.trim();
+            const tb = ui.srcB.value.trim();
+            const kb = ui.keyB.value.trim();
+
+            if (!ta && !tb) throw new Error('请输入内容 A 或内容 B');
+
+            // 内容 A：使用用户选择的算法
+            const encA = ta ? await aesEncrypt(ta, keyA, algo) : '';
+            // 内容 B：若填写了密码 B，也用相同算法加密
+            const encB = (tb && kb) ? await aesEncrypt(tb, kb, algo) : '';
+
+            // 使用 | 作为双瞳外层分隔符，避免与冒号冲突
+            output = `DUAL:${encA}|${encB}`;
+
+        } else if (state.mode === 'image') {
+            if (!state.fileData) throw new Error('请选择图片');
+            output = `IMG:${await aesEncrypt(state.fileData, keyA, algo)}`;
+        }
+
+        ui.resEnc.textContent = output;
+        ui.resEncBox.classList.remove('empty');
+        ui.metaEnc.textContent = `${output.length} 字符 · ${algo}`;
+        show(ui.btnCopyEnc);
+        notice('加密完成', 'success');
+
+    } catch (err) {
+        notice(`加密失败: ${err.message}`, 'error');
+        ui.metaEnc.textContent = '失败';
+    }
+
+    $('btnEnc').disabled = false;
+};
+
+// ================================================================
+// 解密
+// ================================================================
+
+$('btnDec').onclick = async () => {
+    const src  = ui.cipher.value.trim();
+    const keyA = ui.decKeyA.value.trim();
+
+    if (!src)  return notice('请输入密文', 'error');
+    if (!keyA) return notice('请输入密码', 'error');
+
+    $('btnDec').disabled = true;
+    ui.metaDec.textContent = '解密中...';
+    hide(ui.imgPrev);
+
+    try {
+        // --- 图片解密 ---
+        if (src.startsWith('IMG:')) {
+            const raw = src.slice(4);
+            const { text: b64 } = await aesDecrypt(raw, keyA);
+
+            // 检测真实 MIME 类型
+            const mime  = detectImageMime(b64);
+            const ext   = mime.split('/')[1]; // png | jpeg | gif | webp
+
+            ui.decImg.src = `data:${mime};base64,${b64}`;
+            ui.btnDl.href = ui.decImg.src;
+            ui.btnDl.download = `decrypted.${ext}`;
+            show(ui.imgPrev);
+            ui.resDec.textContent = '[图片已解密]';
+            ui.metaDec.textContent = mime;
+
+        // --- 双瞳解密 ---
+        } else if (src.startsWith('DUAL:')) {
+            const raw = src.slice(5);
+            // 先按第一个 : 找到 partA 的起始位置
+            // 格式: AESGCM:hexSalt:hexIv:hexCipher|...
+            const colonPos = raw.indexOf(':');
+            const encA_raw = raw.slice(0, colonPos);          // "AESGCM:hexSalt:hexIv:hexCipher"
+            const rest     = raw.slice(colonPos + 1);          // 剩余含 | 分隔的部分
+            const pipePos  = rest.indexOf('|');
+            const encB_raw = pipePos >= 0 ? rest.slice(0, pipePos) : rest;
+
+            let res = '';
+
+            // 解密 A
+            if (encA_raw) {
+                try {
+                    const { text } = await aesDecrypt(encA_raw, keyA);
+                    res += `--- A ---\n${text}\n\n`;
+                } catch {
+                    res += `--- A ---\n[密码错误]\n\n`;
+                }
+            }
+
+            // 解密 B
+            if (encB_raw) {
+                const keyB = ui.decKeyB.value.trim();
+                if (keyB) {
+                    try {
+                        const { text } = await aesDecrypt(encB_raw, keyB);
+                        res += `--- B ---\n${text}`;
+                    } catch {
+                        res += `--- B ---\n[密码B错误]`;
+                    }
+                } else {
+                    res += `--- B ---\n[需输入密码B]`;
+                }
+            }
+
+            ui.resDec.textContent = res;
+            ui.metaDec.textContent = '双瞳';
+
+        // --- 标准 AES 解密 ---
+        } else {
+            const { text, algo } = await aesDecrypt(src, keyA);
+            ui.resDec.textContent = text;
+            ui.metaDec.textContent = `AES-256-${algo}`;
+            ui.detectType.textContent = `AES-256-${algo}`;
+        }
+
+        ui.resDecBox.classList.remove('empty');
+        show(ui.btnCopyDec);
+        notice('解密完成', 'success');
+
+    } catch (err) {
+        notice(`解密失败: ${err.message}`, 'error');
+        ui.metaDec.textContent = '失败';
+    }
+
+    $('btnDec').disabled = false;
+};
+
+// ================================================================
+// 复制（Clipboard API + execCommand 降级）
+// ================================================================
+
+async function copyText(text) {
+    if (!text || text.startsWith('[') && text.includes(']')) return; // 空占位符不复制
+
+    try {
+        await navigator.clipboard.writeText(text);
+        notice('已复制', 'success');
+    } catch {
+        // 降级：textarea 选中复制
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); notice('已复制', 'success'); }
+        catch { notice('复制失败，请手动选择复制', 'error'); }
+        document.body.removeChild(ta);
+    }
+}
+
+ui.btnCopyEnc.onclick = () => {
+    const t = ui.resEnc.textContent;
+    if (ui.resEncBox.classList.contains('empty') || t.startsWith('加密结果')) return;
+    copyText(t);
+};
+
+ui.btnCopyDec.onclick = () => {
+    const t = ui.resDec.textContent;
+    if (ui.resDecBox.classList.contains('empty') || t.startsWith('解密结果')) return;
+    copyText(t);
+};
+
+// ================================================================
+// 重置所有状态
+// ================================================================
+
+function resetAll() {
+    // 加密区
+    ui.srcText.value = '';
+    ui.srcA.value = '';
+    ui.srcB.value = '';
+    ui.keyA.value = '';
+    ui.keyB.value = '';
+    ui.strFill.style.width = '0%';
+    ui.strLabel.textContent = '';
+    ui.countSrc.textContent = '0 字符';
+    ui.resEnc.textContent = '加密结果将显示在这里';
+    ui.resEncBox.classList.add('empty');
+    ui.metaEnc.textContent = '等待操作';
+    hide(ui.btnCopyEnc);
+
+    // Tab → text
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.tab[data-mode="text"]').classList.add('active');
+    state.mode = 'text';
+    hide($('modeDual')); hide($('modeImage')); hide(ui.fieldKeyB); show($('modeText'));
+
+    // 算法 → GCM
+    document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.algo-btn[data-algo="GCM"]').classList.add('active');
+    state.selectedAlgo = 'GCM';
+
+    // 文件
+    state.fileData = null;
+    ui.uploadText.textContent = '点击选择图片';
+    ui.upload.classList.remove('loaded');
+    ui.fileInput.value = '';
+
+    // 解密区
+    ui.cipher.value = '';
+    ui.decKeyA.value = '';
+    ui.decKeyB.value = '';
+    ui.countCipher.textContent = '0 字符';
+    ui.resDec.textContent = '解密结果将显示在这里';
+    ui.resDecBox.classList.add('empty');
+    ui.metaDec.textContent = '等待操作';
+    hide(ui.btnCopyDec);
+    hide(ui.detectStrip);
+    hide(ui.fieldDecB);
+    hide(ui.imgPrev);
+}
+
+$('btnClearEnc').onclick = () =>
+    showModal('清空确认', '确定要清空所有加密内容并重置环境吗？', () =>
+        runProgress('正在清空', '清理', 1200, resetAll));
+
+$('btnClearDec').onclick = () =>
+    showModal('清空确认', '确定要清空所有解密内容并重置环境吗？', () =>
+        runProgress('正在清空', '清理', 1200, resetAll));
+
+// ================================================================
+// 启动
+// ================================================================
+
+(function init() {
     if (!window.crypto || !window.crypto.subtle) {
-        notice('当前环境不支持安全加密', 'error');
-    } else {
-        runInitSequence();
+        notice('当前环境不支持 Web Crypto API（需要 HTTPS 或 localhost）', 'error');
+        return;
     }
+    runProgress('正在初始化', '加载', 1200, () =>
+        notice('就绪，开始使用', 'success'));
+})();
 </script>
 </body>
 </html>
